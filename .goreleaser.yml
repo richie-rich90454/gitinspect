@@ -1,0 +1,99 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: gitinspect
+    main: ./cmd/gitinspect
+    binary: gitinspect
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
+
+archives:
+  - id: default
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+sboms:
+  - id: default
+    artifacts: archive
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - Merge pull request
+      - Merge branch
+
+brews:
+  - name: gitinspect
+    repository:
+      owner: your-username
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/your-username/gitinspect"
+    description: "Turn any Git repo into an AI-friendly, token-efficient snapshot"
+    license: Apache-2.0
+    install: |
+      bin.install "gitinspect"
+    test: |
+      system "#{bin}/gitinspect", "--help"
+
+scoops:
+  - name: gitinspect
+    repository:
+      owner: your-username
+      name: scoop-bucket
+      token: "{{ .Env.SCOOP_BUCKET_TOKEN }}"
+    homepage: "https://github.com/your-username/gitinspect"
+    description: "Turn any Git repo into an AI-friendly, token-efficient snapshot"
+    license: Apache-2.0
+
+nfpms:
+  - id: default
+    package_name: gitinspect
+    homepage: "https://github.com/your-username/gitinspect"
+    description: "Turn any Git repo into an AI-friendly, token-efficient snapshot"
+    license: Apache-2.0
+    formats:
+      - deb
+      - rpm
+      - apk
+    maintainer: "gitinspect contributors"
+
+release:
+  github:
+    owner: your-username
+    name: gitinspect
+  draft: false
+  prerelease: auto
+  mode: replace

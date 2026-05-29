@@ -1,0 +1,33 @@
+{
+  "version": "0.1.0",
+  "description": "Turn any Git repo into an AI-friendly, token-efficient snapshot",
+  "homepage": "https://github.com/your-username/gitinspect",
+  "license": "Apache-2.0",
+  "architecture": {
+    "64bit": {
+      "url": "https://github.com/your-username/gitinspect/releases/download/v0.1.0/gitinspect_0.1.0_windows_amd64.zip",
+      "bin": [
+        ["gitinspect.exe", "gitinspect"]
+      ]
+    },
+    "arm64": {
+      "url": "https://github.com/your-username/gitinspect/releases/download/v0.1.0/gitinspect_0.1.0_windows_arm64.zip",
+      "bin": [
+        ["gitinspect.exe", "gitinspect"]
+      ]
+    }
+  },
+  "checkver": {
+    "github": "https://github.com/your-username/gitinspect"
+  },
+  "autoupdate": {
+    "architecture": {
+      "64bit": {
+        "url": "https://github.com/your-username/gitinspect/releases/download/v$version/gitinspect_$version_windows_amd64.zip"
+      },
+      "arm64": {
+        "url": "https://github.com/your-username/gitinspect/releases/download/v$version/gitinspect_$version_windows_arm64.zip"
+      }
+    }
+  }
+}

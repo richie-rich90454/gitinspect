@@ -7,26 +7,95 @@ A CLI tool (and optional HTTP server) that turns any Git repository (local path 
 ![Go Version](https://img.shields.io/github/go-mod/go-version/your-username/gitinspect)
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Build Status](https://github.com/your-username/gitinspect/actions/workflows/ci.yml/badge.svg)
+![Release](https://img.shields.io/github/v/release/your-username/gitinspect)
 
-## Quick Install
+## Installation
+
+### Quick Install (macOS / Linux)
+
+The fastest way to get started — one command:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/your-username/gitinspect/main/install.sh | bash
+```
+
+Or with `wget`:
+
+```bash
+wget -qO- https://raw.githubusercontent.com/your-username/gitinspect/main/install.sh | bash
+```
+
+> 💡 Set `INSTALL_DIR` to change the install location (default: `/usr/local/bin`):
+> ```bash
+> curl -fsSL ... | INSTALL_DIR=~/.local/bin bash
+> ```
+
+### Homebrew (macOS / Linux)
+
+```bash
+brew tap your-username/tap
+brew install gitinspect
+```
+
+### Scoop (Windows)
+
+```bash
+scoop bucket add gitinspect https://github.com/your-username/scoop-bucket
+scoop install gitinspect
+```
 
 ### Go Install
+
+Requires Go 1.22+:
+
 ```bash
 go install github.com/your-username/gitinspect/cmd/gitinspect@latest
 ```
 
-### Homebrew
-```bash
-brew install your-username/tap/gitinspect
-```
+### Docker
 
-### Scoop
-```powershell
-scoop install gitinspect
+```bash
+docker run --rm -v /path/to/repo:/repo your-username/gitinspect /repo
 ```
 
 ### Binary Download
-Download the latest binary from [Releases](https://github.com/your-username/gitinspect/releases).
+
+Download the latest binary for your platform from the [Releases page](https://github.com/your-username/gitinspect/releases):
+
+| Platform | Architecture | File |
+|----------|-------------|------|
+| Linux | amd64 | `gitinspect_X.Y.Z_linux_amd64.tar.gz` |
+| Linux | arm64 | `gitinspect_X.Y.Z_linux_arm64.tar.gz` |
+| macOS | amd64 | `gitinspect_X.Y.Z_darwin_amd64.tar.gz` |
+| macOS | arm64 | `gitinspect_X.Y.Z_darwin_arm64.tar.gz` |
+| Windows | amd64 | `gitinspect_X.Y.Z_windows_amd64.zip` |
+| Windows | arm64 | `gitinspect_X.Y.Z_windows_arm64.zip` |
+
+Extract and place the binary in your `PATH`:
+
+```bash
+# Linux / macOS
+tar xzf gitinspect_*_linux_amd64.tar.gz
+chmod +x gitinspect
+sudo mv gitinspect /usr/local/bin/
+
+# Windows — extract the zip and add gitinspect.exe to your PATH
+```
+
+### Debian / RPM / APK
+
+Packages are published with each release:
+
+```bash
+# Debian / Ubuntu
+sudo dpkg -i gitinspect_*_linux_amd64.deb
+
+# RHEL / Fedora
+sudo rpm -i gitinspect_*_linux_amd64.rpm
+
+# Alpine
+sudo apk add gitinspect_*_linux_amd64.apk
+```
 
 ## Usage
 
@@ -103,10 +172,21 @@ file content...
 | Caching | ✅ | ❌ | ❌ |
 | .gitignore support | ✅ | ✅ | ✅ |
 | File priority sorting | ✅ | ❌ | ❌ |
+| Install via Homebrew | ✅ | ❌ | ✅ |
+| Install via Scoop | ✅ | ❌ | ❌ |
+| One-line install script | ✅ | ❌ | ❌ |
 
 ## Demo
 
 TODO: add demo.gif
+
+## Contributing
+
+1. Fork the repo
+2. Create your feature branch (`git checkout -b feature/my-feature`)
+3. Commit your changes (`git commit -am 'Add my feature'`)
+4. Push to the branch (`git push origin feature/my-feature`)
+5. Open a Pull Request
 
 ## License
 
