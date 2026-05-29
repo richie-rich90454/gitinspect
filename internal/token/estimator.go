@@ -1,28 +1,18 @@
 package token
 
-// Estimate estimates the number of tokens for a given string.
-// Uses a simple heuristic: len(content) / 4
 func Estimate(content string) int {
-	return len(content) / 4
+	return (len(content) + 3) / 4
 }
 
-// Truncate truncates content to fit within maxTokens, keeping first and last parts.
-func Truncate(content string, maxTokens int) (string, bool) {
-	estimated := Estimate(content)
-	if estimated <= maxTokens {
-		return content, false
+func Truncate(content string) string {
+	const headSize = 1000
+	const tailSize = 500
+
+	if len(content) <= headSize+tailSize+50 {
+		return content
 	}
 
-	// Keep first and last parts
-	chars := maxTokens * 4 // 4 chars per token
-	if chars <= 0 {
-		return "", true
-	}
-
-	keepChars := chars / 2
-	if keepChars*2 > len(content) {
-		return content, true
-	}
-
-	return content[:keepChars] + "\n... [TRUNCATED] ...\n" + content[len(content)-keepChars:], true
+	head := content[:headSize]
+	tail := content[len(content)-tailSize:]
+	return head + "\n... [truncated] ...\n" + tail
 }

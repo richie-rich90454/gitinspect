@@ -31,10 +31,7 @@ Thumbs.db
 
 # Cache
 .cache/
-
-# Trae AI
 .trae/
-
-# Agent skills
 .agents/
 AGENTS.md
+skills-lock.json

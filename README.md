@@ -1,6 +1,6 @@
 # gitinspect
 
-A CLI tool (and optional HTTP server) that turns any Git repository (local path or remote URL) into a structured, token-efficient snapshot optimized for LLMs and AI agents.
+A CLI tool (and optional HTTP server) that turns any Git repository (local path or remote URL) into a structured, token-efficient snapshot optimized for LLMs and AI agents. Works with any Git host — GitHub, GitLab, Bitbucket, self-hosted — without requiring a full clone.
 
 ## Badges
 
@@ -13,6 +13,16 @@ A CLI tool (and optional HTTP server) that turns any Git repository (local path 
 ### Go Install
 ```bash
 go install github.com/your-username/gitinspect/cmd/gitinspect@latest
+```
+
+### Homebrew
+```bash
+brew install your-username/tap/gitinspect
+```
+
+### Scoop
+```powershell
+scoop install gitinspect
 ```
 
 ### Binary Download
@@ -33,6 +43,7 @@ gitinspect https://github.com/user/repo.git
 ### With Options
 ```bash
 gitinspect --format text --max-tokens 10000 --strip /path/to/repo
+gitinspect --include "**/*.go" --exclude "**/vendor/*" .
 ```
 
 ### HTTP Server Mode
@@ -41,7 +52,9 @@ gitinspect --server --port 8080
 ```
 Then send a POST request to `/inspect`:
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '{"repo_url": "https://github.com/user/repo.git"}' http://localhost:8080/inspect
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"repo": "https://github.com/user/repo.git", "format": "json"}' \
+  http://localhost:8080/inspect
 ```
 
 ## CLI Flags
@@ -49,19 +62,38 @@ curl -X POST -H "Content-Type: application/json" -d '{"repo_url": "https://githu
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--format` | `json` | Output format: `json`, `text`, `yaml` |
-| `--max-tokens` | `6000` | Maximum number of tokens |
+| `--max-tokens` | `6000` | Maximum token budget |
 | `--max-files` | `0` | Maximum number of files (0 = unlimited) |
-| `--include` | (none) | Include patterns (can repeat) |
-| `--exclude` | (none) | Exclude patterns (can repeat) |
+| `--include` | (none) | Include glob patterns (repeatable) |
+| `--exclude` | (none) | Exclude glob patterns (repeatable) |
 | `--strip` | `false` | Strip comments and blank lines |
 | `--no-cache` | `false` | Disable cache |
 | `--server` | `false` | Start HTTP server |
 | `--port` | `8080` | HTTP server port |
 
-## Comparison Table
+## Output Format
+
+### JSON (default)
+```json
+{
+  "tree": { "path/to/file.go": "file content..." },
+  "stats": { "file_count": 5, "total_bytes": 1234, "truncated": false },
+  "dependencies": ["github.com/foo/bar@v1.0.0"],
+  "version": "0.1.0"
+}
+```
+
+### Text
+```
+File: path/to/file.go
+---
+file content...
+```
+
+## Comparison
 
 | Feature | gitinspect | gitingest | repomix |
-|---------|------------|-----------|---------|
+|---------|:----------:|:---------:|:-------:|
 | Local repo support | ✅ | ✅ | ✅ |
 | Remote repo support | ✅ | ✅ | ✅ |
 | Token budget management | ✅ | ✅ | ❌ |
@@ -69,6 +101,8 @@ curl -X POST -H "Content-Type: application/json" -d '{"repo_url": "https://githu
 | HTTP server | ✅ | ❌ | ❌ |
 | Output formats | json/text/yaml | text | json |
 | Caching | ✅ | ❌ | ❌ |
+| .gitignore support | ✅ | ✅ | ✅ |
+| File priority sorting | ✅ | ❌ | ❌ |
 
 ## Demo
 
@@ -76,4 +110,4 @@ TODO: add demo.gif
 
 ## License
 
-Apache License 2.0 - See [LICENSE](LICENSE) for details.
+Apache License 2.0 — See [LICENSE](LICENSE) for details.

@@ -1,63 +1,59 @@
 package repo
 
 import (
+	"fmt"
 	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
 )
 
-// RemoteRepo represents a remote Git repository
-type RemoteRepo struct {
-	URL    string
-	Commit string
+func ResolveHEAD(url string) (string, error) {
+	cmd := exec.Command("git", "ls-remote", url, "HEAD")
+	out, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("ls-remote failed: %w", err)
+	}
+	fields := strings.Fields(string(out))
+	if len(fields) == 0 {
+		return "", fmt.Errorf("no HEAD found")
+	}
+	return fields[0], nil
 }
 
-// NewRemoteRepo creates a new RemoteRepo
-func NewRemoteRepo(url string, commit string) *RemoteRepo {
-	return &RemoteRepo{URL: url, Commit: commit}
+func ShallowClone(url, tmpDir string) error {
+	cmd := exec.Command("git", "clone", "--depth=1", "--filter=blob:none", url, tmpDir)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("git clone failed: %s: %w", string(out), err)
+	}
+	return nil
 }
 
-// Clone clones the remote repository to a temporary directory
-func (r *RemoteRepo) Clone() (string, error) {
-	tempDir, err := os.MkdirTemp("", "gitinspect-")
+func FetchRemote(url string) (string, error) {
+	tmpDir, err := os.MkdirTemp("", "gitinspect-")
 	if err != nil {
 		return "", err
 	}
 
-	cloneOpts := &git.CloneOptions{
-		URL:               r.URL,
-		Depth:             1,
-		SingleBranch:     true,
-		RecurseSubmodules: git.NoRecurseSubmodules,
-	}
+	if err := ShallowClone(url, tmpDir); err != nil {
+		_ = os.RemoveAll(tmpDir)
 
-	repo, err := git.PlainClone(tempDir, false, cloneOpts)
-	if err != nil {
-		_ = os.RemoveAll(tempDir)
-		return "", err
-	}
-
-	// If a specific commit is requested, check it out
-	if r.Commit != "" {
-		w, err := repo.Worktree()
-		if err != nil {
-			_ = os.RemoveAll(tempDir)
-			return "", err
+		cloneOpts := &git.CloneOptions{
+			URL:               url,
+			Depth:             1,
+			SingleBranch:     true,
+			RecurseSubmodules: git.NoRecurseSubmodules,
 		}
-		err = w.Checkout(&git.CheckoutOptions{
-			Hash: plumbing.NewHash(r.Commit),
-		})
-		if err != nil {
-			_ = os.RemoveAll(tempDir)
-			return "", err
+		if _, err := git.PlainClone(tmpDir, false, cloneOpts); err != nil {
+			_ = os.RemoveAll(tmpDir)
+			return "", fmt.Errorf("clone failed (exec and go-git): %w", err)
 		}
 	}
 
-	return tempDir, nil
+	return tmpDir, nil
 }
 
-// Cleanup cleans up the temporary directory
-func (r *RemoteRepo) Cleanup(tempDir string) error {
-	return os.RemoveAll(tempDir)
+func Cleanup(dir string) {
+	_ = os.RemoveAll(dir)
 }
