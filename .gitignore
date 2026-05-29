@@ -34,3 +34,7 @@ Thumbs.db
 
 # Trae AI
 .trae/
+
+# Agent skills
+.agents/
+AGENTS.md
