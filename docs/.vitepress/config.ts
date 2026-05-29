@@ -1,0 +1,79 @@
+import { defineConfig } from 'vitepress'
+
+export default defineConfig({
+  title: 'gitinspect',
+  description: 'Turn any Git repo into an AI-friendly snapshot',
+  lang: 'en-US',
+  cleanUrls: true,
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
+  ],
+  themeConfig: {
+    logo: '/logo.svg',
+    nav: [
+      { text: 'Guide', link: '/guide/getting-started' },
+      { text: 'Examples', link: '/examples/local-repo' },
+      { text: 'MCP', link: '/guide/mcp' },
+      {
+        text: 'v0.1.0',
+        items: [
+          { text: 'Changelog', link: '/guide/changelog' },
+          { text: 'GitHub', link: 'https://github.com/your-username/gitinspect' },
+        ],
+      },
+    ],
+    sidebar: [
+      {
+        text: 'Introduction',
+        items: [
+          { text: 'What is gitinspect?', link: '/' },
+          { text: 'Getting Started', link: '/guide/getting-started' },
+        ],
+      },
+      {
+        text: 'Guide',
+        items: [
+          { text: 'Installation', link: '/guide/installation' },
+          { text: 'CLI Reference', link: '/guide/cli' },
+          { text: 'Output Formats', link: '/guide/output-formats' },
+          { text: 'File Priority', link: '/guide/priority' },
+          { text: 'Token Budget', link: '/guide/token-budget' },
+          { text: 'Dependency Extraction', link: '/guide/dependencies' },
+          { text: 'Caching', link: '/guide/caching' },
+        ],
+      },
+      {
+        text: 'AI Agents (MCP)',
+        items: [
+          { text: 'MCP Server', link: '/guide/mcp' },
+          { text: 'Agent Config', link: '/guide/agent-config' },
+        ],
+      },
+      {
+        text: 'Examples',
+        items: [
+          { text: 'Local Repository', link: '/examples/local-repo' },
+          { text: 'Remote Repository', link: '/examples/remote-repo' },
+          { text: 'HTTP Server', link: '/examples/http-server' },
+          { text: 'AI Agent Usage', link: '/examples/ai-agent' },
+        ],
+      },
+      {
+        text: 'Comparisons',
+        items: [
+          { text: 'vs gitingest & repomix', link: '/guide/comparison' },
+        ],
+      },
+    ],
+    search: {
+      provider: 'local',
+    },
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/your-username/gitinspect' },
+    ],
+    footer: {
+      message: 'Released under the Apache-2.0 License.',
+      copyright: 'Copyright 2024-present gitinspect contributors',
+    },
+  },
+})
