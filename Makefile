@@ -1,4 +1,4 @@
-.PHONY: all build test clean run dev lint install uninstall docker
+.PHONY: all build test clean run dev lint install uninstall
 
 BINARY_NAME=gitinspect
 GO=go
@@ -17,10 +17,10 @@ clean:
 	$(GO) clean ./...
 
 run: build
-	./$(BINARY_NAME) .
+	./$(BINARY_NAME) inspect .
 
 dev: build
-	./$(BINARY_NAME) --format text --strip .
+	./$(BINARY_NAME) inspect --format text --strip .
 
 lint:
 	golangci-lint run
@@ -31,6 +31,3 @@ install: build
 
 uninstall:
 	rm -f $(DESTDIR)$(INSTALL_DIR)/$(BINARY_NAME)
-
-docker:
-	docker build -t gitinspect .

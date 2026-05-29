@@ -1,6 +1,6 @@
 # gitinspect
 
-A CLI tool (and optional HTTP server) that turns any Git repository (local path or remote URL) into a structured, token-efficient snapshot optimized for LLMs and AI agents. Works with any Git host — GitHub, GitLab, Bitbucket, self-hosted — without requiring a full clone.
+A CLI tool (and optional HTTP/MCP server) that turns any Git repository (local path or remote URL) into a structured, token-efficient snapshot optimized for LLMs and AI agents. Works with any Git host — GitHub, GitLab, Bitbucket, self-hosted — without requiring a full clone.
 
 ## Badges
 
@@ -12,8 +12,6 @@ A CLI tool (and optional HTTP server) that turns any Git repository (local path 
 ## Installation
 
 ### Quick Install (macOS / Linux)
-
-The fastest way to get started — one command:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/your-username/gitinspect/main/install.sh | bash
@@ -46,16 +44,8 @@ scoop install gitinspect
 
 ### Go Install
 
-Requires Go 1.22+:
-
 ```bash
 go install github.com/your-username/gitinspect/cmd/gitinspect@latest
-```
-
-### Docker
-
-```bash
-docker run --rm -v /path/to/repo:/repo your-username/gitinspect /repo
 ```
 
 ### Binary Download
@@ -84,8 +74,6 @@ sudo mv gitinspect /usr/local/bin/
 
 ### Debian / RPM / APK
 
-Packages are published with each release:
-
 ```bash
 # Debian / Ubuntu
 sudo dpkg -i gitinspect_*_linux_amd64.deb
@@ -99,31 +87,134 @@ sudo apk add gitinspect_*_linux_amd64.apk
 
 ## Usage
 
+### Commands
+
+```
+gitinspect inspect [flags] <repo-path-or-url>   Inspect a repository
+gitinspect serve [flags]                          Start HTTP server
+gitinspect mcp                                     Start MCP server (for AI agents)
+```
+
 ### Local Repository
 ```bash
-gitinspect /path/to/repo
+gitinspect inspect /path/to/repo
 ```
 
 ### Remote Repository
 ```bash
-gitinspect https://github.com/user/repo.git
+gitinspect inspect https://github.com/user/repo.git
 ```
 
 ### With Options
 ```bash
-gitinspect --format text --max-tokens 10000 --strip /path/to/repo
-gitinspect --include "**/*.go" --exclude "**/vendor/*" .
+gitinspect inspect --format text --max-tokens 10000 --strip /path/to/repo
+gitinspect inspect --include "**/*.go" --exclude "**/vendor/*" .
 ```
 
 ### HTTP Server Mode
 ```bash
-gitinspect --server --port 8080
+gitinspect serve --port 8080
 ```
 Then send a POST request to `/inspect`:
 ```bash
 curl -X POST -H "Content-Type: application/json" \
   -d '{"repo": "https://github.com/user/repo.git", "format": "json"}' \
   http://localhost:8080/inspect
+```
+
+## AI Agent Integration (MCP)
+
+gitinspect includes a built-in **Model Context Protocol (MCP)** server, making it directly invokable by AI coding agents like Claude, Cursor, Windsurf, and others.
+
+### Starting the MCP Server
+
+```bash
+gitinspect mcp
+```
+
+This starts an MCP server over stdio — the standard transport for AI agent integration.
+
+### Configuring in AI Agents
+
+#### Claude Desktop / Claude Code
+
+Add to your `claude_desktop_config.json` or `.claude/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "gitinspect": {
+      "command": "gitinspect",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+#### Cursor
+
+Add to your `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "gitinspect": {
+      "command": "gitinspect",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+#### Windsurf
+
+Add to your `.windsurf/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "gitinspect": {
+      "command": "gitinspect",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+#### VS Code (GitHub Copilot)
+
+Add to your `.vscode/mcp.json`:
+
+```json
+{
+  "servers": {
+    "gitinspect": {
+      "command": "gitinspect",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+### MCP Tools Available
+
+| Tool | Description |
+|------|-------------|
+| `inspect_repo` | Inspect a Git repo and return a structured snapshot with file contents, dependencies, and stats. Supports `format`, `max_tokens`, `max_files`, `include`, `exclude`, `strip`, `no_cache` parameters. |
+| `list_repo_files` | List all files in a repo with priority scores and token estimates — useful for deciding which files to inspect before reading contents. |
+
+### Example Agent Interactions
+
+An AI agent can use gitinspect like this:
+
+```
+Agent: I'll inspect the repository structure first.
+→ Calls: list_repo_files(repo="/path/to/project")
+← Gets: File list with priority scores and token estimates
+
+Agent: Now let me read the key files.
+→ Calls: inspect_repo(repo="/path/to/project", max_tokens=4000, strip=true)
+← Gets: Structured JSON with file contents, dependencies, and stats
 ```
 
 ## CLI Flags
@@ -137,8 +228,8 @@ curl -X POST -H "Content-Type: application/json" \
 | `--exclude` | (none) | Exclude glob patterns (repeatable) |
 | `--strip` | `false` | Strip comments and blank lines |
 | `--no-cache` | `false` | Disable cache |
-| `--server` | `false` | Start HTTP server |
-| `--port` | `8080` | HTTP server port |
+| `--quiet` | `false` | Suppress progress output (for scripting) |
+| `--port` | `8080` | HTTP server port (serve command) |
 
 ## Output Format
 
@@ -168,6 +259,7 @@ file content...
 | Token budget management | ✅ | ✅ | ❌ |
 | Dependency extraction | ✅ | ❌ | ❌ |
 | HTTP server | ✅ | ❌ | ❌ |
+| MCP server (AI agents) | ✅ | ❌ | ❌ |
 | Output formats | json/text/yaml | text | json |
 | Caching | ✅ | ❌ | ❌ |
 | .gitignore support | ✅ | ✅ | ✅ |

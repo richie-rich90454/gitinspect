@@ -16,6 +16,10 @@ import (
 
 const Version = "0.1.0"
 
+func PriorityScore(path string) int {
+	return token.PriorityScore(path)
+}
+
 type Options struct {
 	Format    string
 	MaxTokens int
