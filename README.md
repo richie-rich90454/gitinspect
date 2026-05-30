@@ -200,7 +200,7 @@ gitinspect inspect --format json .
   "tree": {
     "README.md": "# my-project\nA cool project.\n",
     "main.go": "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}\n",
-    "go.mod": "module github.com/user/project\n\ngo 1.22\n"
+    "go.mod": "module github.com/user/project\n\ngo 1.25\n"
   },
   "stats": {
     "file_count": 3,
@@ -231,7 +231,7 @@ File: go.mod
 ---
 module github.com/user/project
 
-go 1.22
+go 1.25
 
 File: main.go
 ---
@@ -298,10 +298,6 @@ Supported manifest files:
 | `Cargo.toml` | Rust | `serde@1.0` |
 | `requirements.txt` | Python | `flask==2.0` |
 | `Gemfile` | Ruby | `rails` |
-
-## Demo
-
-TODO: add demo.gif
 
 ## Contributing
 

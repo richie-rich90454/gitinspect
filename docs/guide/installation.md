@@ -30,7 +30,7 @@ scoop install gitinspect
 
 ## Go Install
 
-Requires Go 1.22+:
+Requires Go 1.25+:
 
 ```bash
 go install github.com/richie-rich90454/gitinspect/cmd/gitinspect@latest

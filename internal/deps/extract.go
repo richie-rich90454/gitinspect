@@ -116,6 +116,9 @@ func extractRequirementsTxt(content string) []string {
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
+		if strings.HasPrefix(line, "-") {
+			continue
+		}
 		deps = append(deps, line)
 	}
 	return deps

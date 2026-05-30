@@ -173,7 +173,7 @@ func listFilesHandler(_ context.Context, request mcp.CallToolRequest) (*mcp.Call
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "Repository: %s\nFiles: %d\n\n", repoArg, len(files))
 	for _, f := range files {
-		estTokens := (f.size + 3) / 4
+		estTokens := token.EstimateSize(f.size)
 		fmt.Fprintf(&sb, "  [priority=%d, ~%d tokens, %d bytes] %s\n", f.priority, estTokens, f.size, f.path)
 	}
 

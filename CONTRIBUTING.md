@@ -47,7 +47,7 @@ See [Development Setup](#development-setup) below.
 
 ### Prerequisites
 
-- Go 1.22+
+- Go 1.25+
 - Node.js 20+ (for documentation)
 - Make (optional)
 

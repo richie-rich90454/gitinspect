@@ -68,7 +68,8 @@ export default defineConfig({
       {
         text: 'Reference',
         items: [
-          { text: 'Feature Overview', link: '/guide/comparison' },
+          { text: 'Feature Overview', link: '/guide/features' },
+          { text: 'Changelog', link: '/guide/changelog' },
         ],
       },
     ],

@@ -8,6 +8,11 @@ func Estimate(content string) int {
 	return (len(content) + 3) / 4
 }
 
+// EstimateSize returns an approximate token count for the given byte size.
+func EstimateSize(size int) int {
+	return (size + 3) / 4
+}
+
 // Truncate shortens content by keeping the head and tail with a truncation marker.
 func Truncate(content string) string {
 	const headSize = 1000

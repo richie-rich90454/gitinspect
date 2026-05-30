@@ -14,7 +14,7 @@ manner.
 
 ### Please Do
 
-- **Report privately** by emailing the maintainers at [INSERT SECURITY EMAIL]
+- **Report privately** by emailing the maintainers at security@richie-rich90454.dev
 - Include a detailed description of the vulnerability
 - Include steps to reproduce the issue
 - Include any possible mitigations you've identified

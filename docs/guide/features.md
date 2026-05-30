@@ -93,7 +93,7 @@ Automatically skips binary files (images, executables, archives, fonts, database
 
 ### Caching
 
-Remote repo snapshots are cached in `~/.cache/gitinspect/` keyed by `sha256(repo_url + "#" + commit_hash)` with a 1-hour TTL. Disable with `--no-cache`.
+Remote repo snapshots are cached in `~/.cache/gitinspect/` keyed by `sha256(repo_url + commit_hash)` with a 1-hour TTL. Disable with `--no-cache`.
 
 ```bash
 gitinspect inspect https://github.com/user/repo.git          # First run: clones

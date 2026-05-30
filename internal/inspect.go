@@ -1,3 +1,4 @@
+// Package internal provides the core inspection pipeline.
 package internal
 
 import (
@@ -13,6 +14,8 @@ import (
 	"github.com/richie-rich90454/gitinspect/internal/repo"
 	"github.com/richie-rich90454/gitinspect/internal/token"
 )
+
+const defaultMaxTokens = 6000
 
 // Version is the current release version.
 const Version = "0.1.0"
@@ -43,6 +46,11 @@ type inspectResult struct {
 }
 
 func runInspectCore(repoArg string, opts Options) (*inspectResult, error) {
+	maxTokens := opts.MaxTokens
+	if maxTokens <= 0 {
+		maxTokens = defaultMaxTokens
+	}
+
 	var localPath string
 	var tmpDir string
 	var isRemote bool
@@ -118,10 +126,13 @@ func runInspectCore(repoArg string, opts Options) (*inspectResult, error) {
 		if opts.Strip {
 			ext := filepath.Ext(p)
 			content = repo.StripComments(content, ext)
+			if content == "" {
+				continue
+			}
 		}
 
 		tokens := token.Estimate(content)
-		if totalTokens+tokens > opts.MaxTokens {
+		if totalTokens+tokens > maxTokens {
 			truncatedContent := token.Truncate(content)
 			if truncatedContent != content {
 				content = truncatedContent
@@ -139,7 +150,7 @@ func runInspectCore(repoArg string, opts Options) (*inspectResult, error) {
 		fileDeps := deps.Extract(p, entryMap[p])
 		allDeps = append(allDeps, fileDeps...)
 
-		if totalTokens >= opts.MaxTokens {
+		if totalTokens >= maxTokens {
 			truncated = true
 			break
 		}

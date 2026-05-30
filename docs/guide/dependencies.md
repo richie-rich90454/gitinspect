@@ -37,7 +37,7 @@ For a Go project with this `go.mod`:
 ```
 module example.com/app
 
-go 1.22
+go 1.25
 
 require (
     github.com/go-git/go-git/v5 v5.12.0

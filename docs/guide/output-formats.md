@@ -18,6 +18,7 @@ gitinspect inspect --format json .
   "stats": {
     "file_count": 3,
     "total_bytes": 456,
+    "total_tokens": 114,
     "truncated": false
   },
   "dependencies": [
@@ -31,9 +32,10 @@ gitinspect inspect --format json .
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `tree` | `map[string]string` | File paths → file contents |
+| `tree` | `map[string]string` | File paths to file contents |
 | `stats.file_count` | `int` | Number of files included |
 | `stats.total_bytes` | `int` | Total bytes of all file contents |
+| `stats.total_tokens` | `int` | Estimated total tokens across all files |
 | `stats.truncated` | `bool` | Whether any content was truncated |
 | `dependencies` | `[]string` | Extracted dependency strings |
 | `version` | `string` | gitinspect version |
@@ -73,6 +75,7 @@ tree:
 stats:
   file_count: 2
   total_bytes: 123
+  total_tokens: 31
   truncated: false
 dependencies:
   - github.com/go-git/go-git/v5@v5.12.0

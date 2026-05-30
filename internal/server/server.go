@@ -4,12 +4,14 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
+	"time"
 
 	internal "github.com/richie-rich90454/gitinspect/internal"
 )
+
+const maxBodySize = 10 << 20
 
 // InspectRequest is the JSON body for POST /inspect.
 type InspectRequest struct {
@@ -25,10 +27,19 @@ type InspectRequest struct {
 
 // Serve starts the HTTP server on the given port.
 func Serve(port int) error {
-	http.HandleFunc("/inspect", inspectHandler)
-	addr := fmt.Sprintf(":%d", port)
-	log.Printf("gitinspect server listening on %s", addr)
-	return http.ListenAndServe(addr, nil)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/inspect", inspectHandler)
+
+	srv := &http.Server{
+		Addr:         fmt.Sprintf(":%d", port),
+		Handler:      mux,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 60 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
+
+	log.Printf("gitinspect server listening on %s", srv.Addr)
+	return srv.ListenAndServe()
 }
 
 func inspectHandler(w http.ResponseWriter, r *http.Request) {
@@ -37,11 +48,10 @@ func inspectHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	const maxBodySize = 10 << 20
 	r.Body = http.MaxBytesReader(w, r.Body, maxBodySize)
 
 	var req InspectRequest
-	if err := json.NewDecoder(io.LimitReader(r.Body, maxBodySize)).Decode(&req); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
