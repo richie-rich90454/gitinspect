@@ -1,6 +1,6 @@
 # gitinspect
 
-A CLI tool (and optional HTTP/MCP server) that turns any Git repository (local path or remote URL) into a structured, token-efficient snapshot optimized for LLMs and AI agents. Works with any Git host â€?GitHub, GitLab, Bitbucket, self-hosted â€?without requiring a full clone.
+A CLI tool (and optional HTTP/MCP server) that turns any Git repository (local path or remote URL) into a structured, token-efficient snapshot optimized for LLMs and AI agents. Works with any Git host â€” GitHub, GitLab, Bitbucket, self-hosted â€” without requiring a full clone.
 
 ## Badges
 
@@ -69,7 +69,7 @@ tar xzf gitinspect_*_linux_amd64.tar.gz
 chmod +x gitinspect
 sudo mv gitinspect /usr/local/bin/
 
-# Windows â€?extract the zip and add gitinspect.exe to your PATH
+# Windows â€” extract the zip and add gitinspect.exe to your PATH
 ```
 
 ### Debian / RPM / APK
@@ -132,7 +132,7 @@ gitinspect includes a built-in **Model Context Protocol (MCP)** server, making i
 gitinspect mcp
 ```
 
-This starts an MCP server over stdio â€?the standard transport for AI agent integration.
+This starts an MCP server over stdio â€” the standard transport for AI agent integration.
 
 ### Configuring in AI Agents
 
@@ -201,7 +201,7 @@ Add to your `.vscode/mcp.json`:
 | Tool | Description |
 |------|-------------|
 | `inspect_repo` | Inspect a Git repo and return a structured snapshot with file contents, dependencies, and stats. Supports `format`, `max_tokens`, `max_files`, `include`, `exclude`, `strip`, `no_cache` parameters. |
-| `list_repo_files` | List all files in a repo with priority scores and token estimates â€?useful for deciding which files to inspect before reading contents. |
+| `list_repo_files` | List all files in a repo with priority scores and token estimates â€” useful for deciding which files to inspect before reading contents. |
 
 ### Example Agent Interactions
 
@@ -209,12 +209,12 @@ An AI agent can use gitinspect like this:
 
 ```
 Agent: I'll inspect the repository structure first.
-â†?Calls: list_repo_files(repo="/path/to/project")
-â†?Gets: File list with priority scores and token estimates
+â†’ Calls: list_repo_files(repo="/path/to/project")
+â† Gets: File list with priority scores and token estimates
 
 Agent: Now let me read the key files.
-â†?Calls: inspect_repo(repo="/path/to/project", max_tokens=4000, strip=true)
-â†?Gets: Structured JSON with file contents, dependencies, and stats
+â†’ Calls: inspect_repo(repo="/path/to/project", max_tokens=4000, strip=true)
+â† Gets: Structured JSON with file contents, dependencies, and stats
 ```
 
 ## CLI Flags
@@ -254,19 +254,19 @@ file content...
 
 | Feature | gitinspect | gitingest | repomix |
 |---------|:----------:|:---------:|:-------:|
-| Local repo support | âœ?| âœ?| âœ?|
-| Remote repo support | âœ?| âœ?| âœ?|
-| Token budget management | âœ?| âœ?| â?|
-| Dependency extraction | âœ?| â?| â?|
-| HTTP server | âœ?| â?| â?|
-| MCP server (AI agents) | âœ?| â?| â?|
+| Local repo support | âœ… | âœ… | âœ… |
+| Remote repo support | âœ… | âœ… | âœ… |
+| Token budget management | âœ… | âœ… | âŒ |
+| Dependency extraction | âœ… | âŒ | âŒ |
+| HTTP server | âœ… | âŒ | âŒ |
+| MCP server (AI agents) | âœ… | âŒ | âŒ |
 | Output formats | json/text/yaml | text | json |
-| Caching | âœ?| â?| â?|
-| .gitignore support | âœ?| âœ?| âœ?|
-| File priority sorting | âœ?| â?| â?|
-| Install via Homebrew | âœ?| â?| âœ?|
-| Install via Scoop | âœ?| â?| â?|
-| One-line install script | âœ?| â?| â?|
+| Caching | âœ… | âŒ | âŒ |
+| .gitignore support | âœ… | âœ… | âœ… |
+| File priority sorting | âœ… | âŒ | âŒ |
+| Install via Homebrew | âœ… | âŒ | âœ… |
+| Install via Scoop | âœ… | âŒ | âŒ |
+| One-line install script | âœ… | âŒ | âŒ |
 
 ## Demo
 
@@ -282,4 +282,4 @@ TODO: add demo.gif
 
 ## License
 
-Apache License 2.0 â€?See [LICENSE](LICENSE) for details.
+Apache License 2.0 â€” See [LICENSE](LICENSE) for details.

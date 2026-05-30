@@ -2,7 +2,7 @@
 
 ## Quick Install (macOS / Linux)
 
-The fastest way to get started â€?one command:
+The fastest way to get started â€” one command:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/richie-rich90454/gitinspect/main/install.sh | bash

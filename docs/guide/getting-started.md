@@ -2,7 +2,7 @@
 
 ## What is gitinspect?
 
-gitinspect is a CLI tool that turns any Git repository â€?local or remote â€?into a structured, token-efficient snapshot optimized for LLMs and AI agents. It works with any Git host without requiring a full clone.
+gitinspect is a CLI tool that turns any Git repository â€” local or remote â€” into a structured, token-efficient snapshot optimized for LLMs and AI agents. It works with any Git host without requiring a full clone.
 
 ## Quick Install
 
@@ -50,7 +50,7 @@ gitinspect mcp
 
 ## Next Steps
 
-- [Installation](/guide/installation) â€?detailed install options
-- [CLI Reference](/guide/cli) â€?all flags and commands
-- [MCP Integration](/guide/mcp) â€?use with AI coding agents
-- [Examples](/examples/local-repo) â€?real-world usage patterns
+- [Installation](/guide/installation) â€” detailed install options
+- [CLI Reference](/guide/cli) â€” all flags and commands
+- [MCP Integration](/guide/mcp) â€” use with AI coding agents
+- [Examples](/examples/local-repo) â€” real-world usage patterns

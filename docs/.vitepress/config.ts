@@ -4,6 +4,7 @@ export default defineConfig({
   title: 'gitinspect',
   description: 'Turn any Git repo into an AI-friendly snapshot',
   lang: 'en-US',
+  base: '/gitinspect/',
   cleanUrls: true,
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],

@@ -116,7 +116,7 @@ npm run docs:build  # Build for production
 - Include tests for any new functionality
 - Update documentation if needed
 - Ensure CI passes (test + lint)
-- Keep PRs focused â€?one feature or fix per PR
+- Keep PRs focused â€” one feature or fix per PR
 
 ## Reporting Bugs
 
@@ -133,10 +133,10 @@ When filing a bug report, please include:
 
 When suggesting a feature, please include:
 
-- **Use case** â€?what problem does this solve?
-- **Proposed solution** â€?how should it work?
-- **Alternatives considered** â€?what other approaches did you consider?
-- **Additional context** â€?screenshots, examples, etc.
+- **Use case** â€” what problem does this solve?
+- **Proposed solution** â€” how should it work?
+- **Alternatives considered** â€” what other approaches did you consider?
+- **Additional context** â€” screenshots, examples, etc.
 
 ---
 
