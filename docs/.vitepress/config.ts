@@ -60,9 +60,9 @@ export default defineConfig({
         ],
       },
       {
-        text: 'Comparisons',
+        text: 'Reference',
         items: [
-          { text: 'vs gitingest & repomix', link: '/guide/comparison' },
+          { text: 'Feature Overview', link: '/guide/comparison' },
         ],
       },
     ],

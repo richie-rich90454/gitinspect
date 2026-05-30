@@ -3,11 +3,17 @@ package mcpserver
 import (
 	"context"
 	"fmt"
+	"os"
+	"sort"
+	"strings"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 
+	"github.com/richie-rich90454/gitinspect/internal/filter"
 	internal "github.com/richie-rich90454/gitinspect/internal"
+	"github.com/richie-rich90454/gitinspect/internal/repo"
+	"github.com/richie-rich90454/gitinspect/internal/token"
 )
 
 func ServeStdio(s *server.MCPServer) error {
@@ -106,34 +112,66 @@ func listFilesHandler(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 		return mcp.NewToolResultError(err.Error()), nil
 	}
 
-	opts := internal.Options{
-		Format:    "json",
-		MaxTokens: 999999,
-	}
-
+	var includes, excludes []string
 	if include := request.GetString("include", ""); include != "" {
-		opts.Include = splitPatterns(include)
+		includes = splitPatterns(include)
 	}
 	if exclude := request.GetString("exclude", ""); exclude != "" {
-		opts.Exclude = splitPatterns(exclude)
+		excludes = splitPatterns(exclude)
 	}
 
-	result, err := internal.RunInspectRaw(repoArg, opts)
+	var localPath string
+	var tmpDir string
+
+	if _, statErr := os.Stat(repoArg); statErr == nil {
+		localPath = repoArg
+	} else {
+		tmpDir, err = repo.FetchRemote(repoArg)
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("fetch remote: %v", err)), nil
+		}
+		defer repo.Cleanup(tmpDir)
+		localPath = tmpDir
+	}
+
+	entries, err := repo.ReadLocalRepo(localPath)
 	if err != nil {
-		return mcp.NewToolResultError(fmt.Sprintf("list failed: %v", err)), nil
+		return mcp.NewToolResultError(fmt.Sprintf("read repo: %v", err)), nil
 	}
 
-	var lines string
-	for path := range result.Tree {
-		score := internal.PriorityScore(path)
-		tokens := len(result.Tree[path]) / 4
-		lines += fmt.Sprintf("  [priority=%d, ~%d tokens] %s\n", score, tokens, path)
+	type fileInfo struct {
+		path     string
+		size     int
+		priority int
 	}
 
-	summary := fmt.Sprintf("Repository: %s\nFiles: %d\nTotal bytes: %d\n\n%s",
-		repoArg, result.Stats.FileCount, result.Stats.TotalBytes, lines)
+	var files []fileInfo
+	for _, e := range entries {
+		if !filter.MatchAny(e.Path, includes, excludes) {
+			continue
+		}
+		files = append(files, fileInfo{
+			path:     e.Path,
+			size:     e.Size,
+			priority: token.PriorityScore(e.Path),
+		})
+	}
 
-	return mcp.NewToolResultText(summary), nil
+	sort.Slice(files, func(i, j int) bool {
+		if files[i].priority != files[j].priority {
+			return files[i].priority > files[j].priority
+		}
+		return files[i].path < files[j].path
+	})
+
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("Repository: %s\nFiles: %d\n\n", repoArg, len(files)))
+	for _, f := range files {
+		estTokens := (f.size + 3) / 4
+		sb.WriteString(fmt.Sprintf("  [priority=%d, ~%d tokens, %d bytes] %s\n", f.priority, estTokens, f.size, f.path))
+	}
+
+	return mcp.NewToolResultText(sb.String()), nil
 }
 
 func splitPatterns(s string) []string {

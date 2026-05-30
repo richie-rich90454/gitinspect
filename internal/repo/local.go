@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
@@ -14,6 +15,36 @@ type FileEntry struct {
 	Path    string
 	Content []byte
 	Size    int
+}
+
+var binaryExts = map[string]bool{
+	".png": true, ".jpg": true, ".jpeg": true, ".gif": true, ".ico": true,
+	".svg": true, ".webp": true, ".bmp": true, ".tiff": true, ".tif": true,
+	".exe": true, ".dll": true, ".so": true, ".dylib": true, ".a": true,
+	".o": true, ".obj": true, ".pyc": true, ".pyd": true, ".class": true,
+	".jar": true, ".war": true, ".zip": true, ".tar": true, ".gz": true,
+	".bz2": true, ".xz": true, ".7z": true, ".rar": true, ".deb": true,
+	".rpm": true, ".apk": true, ".dmg": true, ".iso": true, ".woff": true,
+	".woff2": true, ".eot": true, ".ttf": true, ".otf": true, ".mp3": true,
+	".mp4": true, ".avi": true, ".mov": true, ".wmv": true, ".flac": true,
+	".pdf": true, ".doc": true, ".docx": true, ".xls": true, ".xlsx": true,
+	".ppt": true, ".pptx": true, ".sqlite": true, ".db": true, ".lock": true,
+}
+
+func isBinary(data []byte) bool {
+	if len(data) == 0 {
+		return false
+	}
+	checkLen := len(data)
+	if checkLen > 8000 {
+		checkLen = 8000
+	}
+	for i := 0; i < checkLen; i++ {
+		if data[i] == 0 {
+			return true
+		}
+	}
+	return false
 }
 
 func ReadLocalRepo(repoPath string) ([]FileEntry, error) {
@@ -72,8 +103,21 @@ func readDir(root string, matcher gitignore.Matcher) ([]FileEntry, error) {
 			}
 		}
 
+		ext := strings.ToLower(filepath.Ext(relPath))
+		if binaryExts[ext] {
+			return nil
+		}
+
 		data, err := os.ReadFile(path)
 		if err != nil {
+			return nil
+		}
+
+		if isBinary(data) {
+			return nil
+		}
+
+		if !utf8.Valid(data) {
 			return nil
 		}
 
@@ -91,11 +135,13 @@ func readDir(root string, matcher gitignore.Matcher) ([]FileEntry, error) {
 func StripComments(content string, ext string) string {
 	var prefix string
 	switch ext {
-	case ".go", ".c", ".cpp", ".h", ".hpp", ".js", ".ts", ".java", ".rs":
+	case ".go", ".c", ".cpp", ".h", ".hpp", ".js", ".ts", ".java", ".rs",
+		".kt", ".swift", ".tsx", ".jsx":
 		prefix = "//"
-	case ".py", ".sh", ".bash", ".zsh", ".yaml", ".yml", ".toml", ".rb":
+	case ".py", ".sh", ".bash", ".zsh", ".yaml", ".yml", ".toml", ".rb",
+		".r", ".ps1", ".perl", ".pl":
 		prefix = "#"
-	case ".sql":
+	case ".sql", ".lua", ".hs", ".elm":
 		prefix = "--"
 	case ".asm":
 		prefix = ";"

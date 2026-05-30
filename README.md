@@ -1,6 +1,6 @@
 # gitinspect
 
-A CLI tool (and optional HTTP/MCP server) that turns any Git repository (local path or remote URL) into a structured, token-efficient snapshot optimized for LLMs and AI agents. Works with any Git host — GitHub, GitLab, Bitbucket, self-hosted — without requiring a full clone.
+A CLI tool (and optional HTTP/MCP server) that turns any Git repository — local path or remote URL — into a structured, token-efficient snapshot optimized for LLMs and AI agents. Works with any Git host without requiring a full clone.
 
 ## Badges
 
@@ -8,6 +8,40 @@ A CLI tool (and optional HTTP/MCP server) that turns any Git repository (local p
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Build Status](https://github.com/richie-rich90454/gitinspect/actions/workflows/ci.yml/badge.svg)
 ![Release](https://img.shields.io/github/v/release/richie-rich90454/gitinspect)
+
+## Features
+
+### Token Budget Management
+
+Estimate tokens as `len(content)/4`. Sort files by priority. Stop when the budget is exceeded. Never waste context window space on irrelevant files.
+
+### AI Agent Ready (MCP)
+
+Built-in MCP server over stdio. Works with Claude, Cursor, Windsurf, VS Code Copilot, and any MCP-compatible agent. Two tools: `inspect_repo` for full snapshots, `list_repo_files` for lightweight file listings.
+
+### Any Git Host
+
+GitHub, GitLab, Bitbucket, self-hosted — works with any Git repository. Remote repos use shallow clone (`--depth 1`) and are cached by commit hash.
+
+### Smart File Priority
+
+Files are sorted by importance: README first, then entry points (`main.*`), then manifests (`go.mod`, `package.json`, etc.), then build files (`Makefile`, `Dockerfile`), then everything else.
+
+### Dependency Extraction
+
+Automatically parse `go.mod`, `package.json`, `Cargo.toml`, `requirements.txt`, and `Gemfile` for dependency awareness.
+
+### Binary File Detection
+
+Automatically skips binary files (images, executables, archives, fonts, etc.) and non-UTF-8 content. No garbled output.
+
+### Comment Stripping
+
+Remove single-line comments and blank lines based on file extension. Supports `//` (Go, C, JS, Java, Rust, etc.), `#` (Python, Shell, YAML, Ruby, etc.), `--` (SQL, Lua, Haskell), and `;` (Assembly).
+
+### Multiple Output Formats
+
+JSON (default), plain text, or YAML. Perfect for piping into LLMs, saving to files, or programmatic consumption.
 
 ## Installation
 
@@ -50,38 +84,13 @@ go install github.com/richie-rich90454/gitinspect/cmd/gitinspect@latest
 
 ### Binary Download
 
-Download the latest binary for your platform from the [Releases page](https://github.com/richie-rich90454/gitinspect/releases):
-
-| Platform | Architecture | File |
-|----------|-------------|------|
-| Linux | amd64 | `gitinspect_X.Y.Z_linux_amd64.tar.gz` |
-| Linux | arm64 | `gitinspect_X.Y.Z_linux_arm64.tar.gz` |
-| macOS | amd64 | `gitinspect_X.Y.Z_darwin_amd64.tar.gz` |
-| macOS | arm64 | `gitinspect_X.Y.Z_darwin_arm64.tar.gz` |
-| Windows | amd64 | `gitinspect_X.Y.Z_windows_amd64.zip` |
-| Windows | arm64 | `gitinspect_X.Y.Z_windows_arm64.zip` |
-
-Extract and place the binary in your `PATH`:
-
-```bash
-# Linux / macOS
-tar xzf gitinspect_*_linux_amd64.tar.gz
-chmod +x gitinspect
-sudo mv gitinspect /usr/local/bin/
-
-# Windows — extract the zip and add gitinspect.exe to your PATH
-```
+Download the latest binary for your platform from the [Releases page](https://github.com/richie-rich90454/gitinspect/releases).
 
 ### Debian / RPM / APK
 
 ```bash
-# Debian / Ubuntu
 sudo dpkg -i gitinspect_*_linux_amd64.deb
-
-# RHEL / Fedora
 sudo rpm -i gitinspect_*_linux_amd64.rpm
-
-# Alpine
 sudo apk add gitinspect_*_linux_amd64.apk
 ```
 
@@ -93,29 +102,36 @@ sudo apk add gitinspect_*_linux_amd64.apk
 gitinspect inspect [flags] <repo-path-or-url>   Inspect a repository
 gitinspect serve [flags]                          Start HTTP server
 gitinspect mcp                                     Start MCP server (for AI agents)
+gitinspect version                                 Print version
 ```
 
 ### Local Repository
+
 ```bash
 gitinspect inspect /path/to/repo
 ```
 
 ### Remote Repository
+
 ```bash
 gitinspect inspect https://github.com/user/repo.git
 ```
 
 ### With Options
+
 ```bash
 gitinspect inspect --format text --max-tokens 10000 --strip /path/to/repo
 gitinspect inspect --include "**/*.go" --exclude "**/vendor/*" .
 ```
 
 ### HTTP Server Mode
+
 ```bash
 gitinspect serve --port 8080
 ```
-Then send a POST request to `/inspect`:
+
+Then send a POST request:
+
 ```bash
 curl -X POST -H "Content-Type: application/json" \
   -d '{"repo": "https://github.com/user/repo.git", "format": "json"}' \
@@ -124,7 +140,7 @@ curl -X POST -H "Content-Type: application/json" \
 
 ## AI Agent Integration (MCP)
 
-gitinspect includes a built-in **Model Context Protocol (MCP)** server, making it directly invokable by AI coding agents like Claude, Cursor, Windsurf, and others.
+gitinspect includes a built-in **Model Context Protocol (MCP)** server, making it directly invokable by AI coding agents.
 
 ### Starting the MCP Server
 
@@ -136,9 +152,7 @@ This starts an MCP server over stdio — the standard transport for AI agent int
 
 ### Configuring in AI Agents
 
-#### Claude Desktop / Claude Code
-
-Add to your `claude_desktop_config.json` or `.claude/settings.json`:
+Add to your agent's MCP config file:
 
 ```json
 {
@@ -151,71 +165,13 @@ Add to your `claude_desktop_config.json` or `.claude/settings.json`:
 }
 ```
 
-#### Cursor
+Works with Claude Desktop, Cursor, Windsurf, VS Code Copilot, and any MCP-compatible agent.
 
-Add to your `.cursor/mcp.json`:
+### MCP Tools
 
-```json
-{
-  "mcpServers": {
-    "gitinspect": {
-      "command": "gitinspect",
-      "args": ["mcp"]
-    }
-  }
-}
-```
+**`inspect_repo`** — Inspect a Git repo and return a structured snapshot with file contents, dependencies, and stats. Supports `format`, `max_tokens`, `max_files`, `include`, `exclude`, `strip`, `no_cache` parameters.
 
-#### Windsurf
-
-Add to your `.windsurf/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "gitinspect": {
-      "command": "gitinspect",
-      "args": ["mcp"]
-    }
-  }
-}
-```
-
-#### VS Code (GitHub Copilot)
-
-Add to your `.vscode/mcp.json`:
-
-```json
-{
-  "servers": {
-    "gitinspect": {
-      "command": "gitinspect",
-      "args": ["mcp"]
-    }
-  }
-}
-```
-
-### MCP Tools Available
-
-| Tool | Description |
-|------|-------------|
-| `inspect_repo` | Inspect a Git repo and return a structured snapshot with file contents, dependencies, and stats. Supports `format`, `max_tokens`, `max_files`, `include`, `exclude`, `strip`, `no_cache` parameters. |
-| `list_repo_files` | List all files in a repo with priority scores and token estimates — useful for deciding which files to inspect before reading contents. |
-
-### Example Agent Interactions
-
-An AI agent can use gitinspect like this:
-
-```
-Agent: I'll inspect the repository structure first.
-→ Calls: list_repo_files(repo="/path/to/project")
-← Gets: File list with priority scores and token estimates
-
-Agent: Now let me read the key files.
-→ Calls: inspect_repo(repo="/path/to/project", max_tokens=4000, strip=true)
-← Gets: Structured JSON with file contents, dependencies, and stats
-```
+**`list_repo_files`** — List all files with priority scores and token estimates, without reading file contents. Useful for deciding which files to inspect before reading them.
 
 ## CLI Flags
 
@@ -231,42 +187,117 @@ Agent: Now let me read the key files.
 | `--quiet` | `false` | Suppress progress output (for scripting) |
 | `--port` | `8080` | HTTP server port (serve command) |
 
-## Output Format
+## Output Examples
 
 ### JSON (default)
+
+```bash
+gitinspect inspect --format json .
+```
+
 ```json
 {
-  "tree": { "path/to/file.go": "file content..." },
-  "stats": { "file_count": 5, "total_bytes": 1234, "truncated": false },
-  "dependencies": ["github.com/foo/bar@v1.0.0"],
+  "tree": {
+    "README.md": "# my-project\nA cool project.\n",
+    "main.go": "package main\n\nfunc main() {\n\tprintln(\"hello\")\n}\n",
+    "go.mod": "module github.com/user/project\n\ngo 1.22\n"
+  },
+  "stats": {
+    "file_count": 3,
+    "total_bytes": 120,
+    "total_tokens": 30,
+    "truncated": false
+  },
+  "dependencies": [
+    "github.com/go-git/go-git/v5@v5.12.0"
+  ],
   "version": "0.1.0"
 }
 ```
 
 ### Text
+
+```bash
+gitinspect inspect --format text .
 ```
-File: path/to/file.go
+
+```
+File: README.md
 ---
-file content...
+# my-project
+A cool project.
+
+File: go.mod
+---
+module github.com/user/project
+
+go 1.22
+
+File: main.go
+---
+package main
+
+func main() {
+        println("hello")
+}
 ```
 
-## Comparison
+### YAML
 
-| Feature | gitinspect | gitingest | repomix |
-|---------|:----------:|:---------:|:-------:|
-| Local repo support | ✅ | ✅ | ✅ |
-| Remote repo support | ✅ | ✅ | ✅ |
-| Token budget management | ✅ | ✅ | ❌ |
-| Dependency extraction | ✅ | ❌ | ❌ |
-| HTTP server | ✅ | ❌ | ❌ |
-| MCP server (AI agents) | ✅ | ❌ | ❌ |
-| Output formats | json/text/yaml | text | json |
-| Caching | ✅ | ❌ | ❌ |
-| .gitignore support | ✅ | ✅ | ✅ |
-| File priority sorting | ✅ | ❌ | ❌ |
-| Install via Homebrew | ✅ | ❌ | ✅ |
-| Install via Scoop | ✅ | ❌ | ❌ |
-| One-line install script | ✅ | ❌ | ❌ |
+```bash
+gitinspect inspect --format yaml .
+```
+
+```yaml
+tree:
+  README.md: |
+    # my-project
+  go.mod: |
+    module github.com/user/project
+  main.go: |
+    package main
+stats:
+  file_count: 3
+  total_bytes: 120
+  total_tokens: 30
+  truncated: false
+dependencies:
+  - github.com/go-git/go-git/v5@v5.12.0
+version: 0.1.0
+```
+
+## File Priority
+
+Files are sorted by priority before inclusion. Higher-priority files are included first within the token budget:
+
+| Priority | Files |
+|----------|-------|
+| 4 (highest) | `README*` |
+| 3 | `main.*`, `cmd/*/main.*` |
+| 2 | `go.mod`, `package.json`, `Cargo.toml`, `setup.py`, `Gemfile`, `requirements.txt` |
+| 1 | `Makefile`, `Dockerfile`, `docker-compose.yml` |
+| 0 | All other files |
+
+## Token Budget
+
+Tokens are estimated as `ceil(len(content) / 4)`. When the budget is exceeded:
+
+1. Files are added in priority order
+2. If a file would exceed the remaining budget, it is truncated (first 1000 + last 500 chars with a truncation marker)
+3. If a single file alone exceeds the entire budget, it is included but truncated
+4. `stats.truncated` is set to `true` in the output
+
+## Dependency Extraction
+
+Supported manifest files:
+
+| File | Format | Example Output |
+|------|--------|----------------|
+| `go.mod` | Go modules | `github.com/go-git/go-git/v5@v5.12.0` |
+| `package.json` | Node.js | `react@^18.0.0` |
+| `Cargo.toml` | Rust | `serde@1.0` |
+| `requirements.txt` | Python | `flask==2.0` |
+| `Gemfile` | Ruby | `rails` |
 
 ## Demo
 
@@ -274,11 +305,7 @@ TODO: add demo.gif
 
 ## Contributing
 
-1. Fork the repo
-2. Create your feature branch (`git checkout -b feature/my-feature`)
-3. Commit your changes (`git commit -am 'Add my feature'`)
-4. Push to the branch (`git push origin feature/my-feature`)
-5. Open a Pull Request
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 
 ## License
 

@@ -1,10 +1,10 @@
 package internal
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/richie-rich90454/gitinspect/internal/deps"
@@ -30,7 +30,16 @@ type Options struct {
 	NoCache   bool
 }
 
-func RunInspect(repoArg string, opts Options) ([]byte, error) {
+type inspectResult struct {
+	tree         map[string]string
+	paths        []string
+	totalBytes   int
+	totalTokens  int
+	truncated    bool
+	dependencies []string
+}
+
+func runInspectCore(repoArg string, opts Options) (*inspectResult, error) {
 	var localPath string
 	var tmpDir string
 	var isRemote bool
@@ -49,7 +58,10 @@ func RunInspect(repoArg string, opts Options) ([]byte, error) {
 		if !opts.NoCache && commitHash != "" {
 			key := repo.GenerateKey(repoArg, commitHash)
 			if data, ok := cache.Get(key); ok {
-				return data, nil
+				var cached inspectResult
+				if unmarshalCache(data, &cached) == nil {
+					return &cached, nil
+				}
 			}
 		}
 
@@ -64,6 +76,11 @@ func RunInspect(repoArg string, opts Options) ([]byte, error) {
 	entries, err := repo.ReadLocalRepo(localPath)
 	if err != nil {
 		return nil, fmt.Errorf("read repo: %w", err)
+	}
+
+	entryMap := make(map[string]string, len(entries))
+	for _, e := range entries {
+		entryMap[e.Path] = string(e.Content)
 	}
 
 	var paths []string
@@ -86,14 +103,8 @@ func RunInspect(repoArg string, opts Options) ([]byte, error) {
 	var allDeps []string
 
 	for _, p := range paths {
-		var content string
-		for _, e := range entries {
-			if e.Path == p {
-				content = string(e.Content)
-				break
-			}
-		}
-		if content == "" {
+		content, ok := entryMap[p]
+		if !ok || content == "" {
 			continue
 		}
 
@@ -104,8 +115,16 @@ func RunInspect(repoArg string, opts Options) ([]byte, error) {
 
 		tokens := token.Estimate(content)
 		if totalTokens+tokens > opts.MaxTokens {
-			content = token.Truncate(content)
-			truncated = true
+			truncatedContent := token.Truncate(content)
+			if truncatedContent != content {
+				content = truncatedContent
+				truncated = true
+			} else {
+				if totalTokens > 0 {
+					truncated = true
+					break
+				}
+			}
 		}
 
 		fileDeps := deps.Extract(p, content)
@@ -121,138 +140,71 @@ func RunInspect(repoArg string, opts Options) ([]byte, error) {
 		}
 	}
 
-	result := output.Result{
-		Tree: tree,
-		Stats: output.Stats{
-			FileCount:  len(tree),
-			TotalBytes: totalBytes,
-			Truncated:  truncated,
-		},
-		Dependencies: allDeps,
-		Version:      Version,
+	sort.Strings(allDeps)
+
+	result := &inspectResult{
+		tree:         tree,
+		paths:        paths,
+		totalBytes:   totalBytes,
+		totalTokens:  totalTokens,
+		truncated:    truncated,
+		dependencies: allDeps,
 	}
 
-	var out []byte
-	switch strings.ToLower(opts.Format) {
-	case "text":
-		out, err = output.FormatText(result)
-	case "yaml":
-		out, err = output.FormatYAML(result)
-	default:
-		out, err = output.FormatJSON(result)
+	if isRemote && !opts.NoCache && commitHash != "" {
+		cache := repo.NewCache()
+		key := repo.GenerateKey(repoArg, commitHash)
+		if data, err := marshalCache(result); err == nil {
+			_ = cache.Set(key, data)
+		}
 	}
+
+	return result, nil
+}
+
+func RunInspect(repoArg string, opts Options) ([]byte, error) {
+	res, err := runInspectCore(repoArg, opts)
 	if err != nil {
 		return nil, err
 	}
 
-	if isRemote && !opts.NoCache && commitHash != "" {
-		cache := repo.NewCache()
-		key := repo.GenerateKey(repoArg, commitHash)
-		_ = cache.Set(key, out)
-	}
-
-	return out, nil
-}
-
-func RunInspectRaw(repoArg string, opts Options) (*output.Result, error) {
-	var localPath string
-	var tmpDir string
-	var isRemote bool
-	var commitHash string
-
-	if _, err := os.Stat(repoArg); err == nil {
-		localPath = repoArg
-	} else {
-		isRemote = true
-		head, err := repo.ResolveHEAD(repoArg)
-		if err == nil {
-			commitHash = head
-		}
-		tmpDir, err = repo.FetchRemote(repoArg)
-		if err != nil {
-			return nil, fmt.Errorf("fetch remote: %w", err)
-		}
-		defer repo.Cleanup(tmpDir)
-		localPath = tmpDir
-	}
-
-	entries, err := repo.ReadLocalRepo(localPath)
-	if err != nil {
-		return nil, fmt.Errorf("read repo: %w", err)
-	}
-
-	var paths []string
-	for _, e := range entries {
-		if filter.MatchAny(e.Path, opts.Include, opts.Exclude) {
-			paths = append(paths, e.Path)
-		}
-	}
-
-	token.SortByPriority(paths)
-
-	if opts.MaxFiles > 0 && len(paths) > opts.MaxFiles {
-		paths = paths[:opts.MaxFiles]
-	}
-
-	tree := make(map[string]string)
-	totalBytes := 0
-	totalTokens := 0
-	truncated := false
-	var allDeps []string
-
-	for _, p := range paths {
-		var content string
-		for _, e := range entries {
-			if e.Path == p {
-				content = string(e.Content)
-				break
-			}
-		}
-		if content == "" {
-			continue
-		}
-
-		if opts.Strip {
-			ext := filepath.Ext(p)
-			content = repo.StripComments(content, ext)
-		}
-
-		tokens := token.Estimate(content)
-		if totalTokens+tokens > opts.MaxTokens {
-			content = token.Truncate(content)
-			truncated = true
-		}
-
-		fileDeps := deps.Extract(p, content)
-		allDeps = append(allDeps, fileDeps...)
-
-		tree[p] = content
-		totalBytes += len(content)
-		totalTokens += token.Estimate(content)
-
-		if totalTokens >= opts.MaxTokens {
-			truncated = true
-			break
-		}
-	}
-
-	result := &output.Result{
-		Tree: tree,
+	result := output.Result{
+		Tree: res.tree,
 		Stats: output.Stats{
-			FileCount:  len(tree),
-			TotalBytes: totalBytes,
-			Truncated:  truncated,
+			FileCount:   len(res.tree),
+			TotalBytes:  res.totalBytes,
+			TotalTokens: res.totalTokens,
+			Truncated:   res.truncated,
 		},
-		Dependencies: allDeps,
+		Dependencies: res.dependencies,
 		Version:      Version,
 	}
 
-	if isRemote && !opts.NoCache && commitHash != "" {
-		cache := repo.NewCache()
-		key := repo.GenerateKey(repoArg, commitHash)
-		data, _ := json.Marshal(result)
-		_ = cache.Set(key, data)
+	switch strings.ToLower(opts.Format) {
+	case "text":
+		return output.FormatText(result)
+	case "yaml":
+		return output.FormatYAML(result)
+	default:
+		return output.FormatJSON(result)
+	}
+}
+
+func RunInspectRaw(repoArg string, opts Options) (*output.Result, error) {
+	res, err := runInspectCore(repoArg, opts)
+	if err != nil {
+		return nil, err
 	}
 
-	return result, nil
+	return &output.Result{
+		Tree: res.tree,
+		Stats: output.Stats{
+			FileCount:   len(res.tree),
+			TotalBytes:  res.totalBytes,
+			TotalTokens: res.totalTokens,
+			Truncated:   res.truncated,
+		},
+		Dependencies: res.dependencies,
+		Version:      Version,
+	}, nil
 }

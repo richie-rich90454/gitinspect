@@ -1,5 +1,7 @@
 package token
 
+import "unicode/utf8"
+
 func Estimate(content string) int {
 	return (len(content) + 3) / 4
 }
@@ -13,6 +15,15 @@ func Truncate(content string) string {
 	}
 
 	head := content[:headSize]
-	tail := content[len(content)-tailSize:]
+	for !utf8.ValidString(head) {
+		head = head[:len(head)-1]
+	}
+
+	tailStart := len(content) - tailSize
+	for tailStart < len(content) && !utf8.RuneStart(content[tailStart]) {
+		tailStart++
+	}
+	tail := content[tailStart:]
+
 	return head + "\n... [truncated] ...\n" + tail
 }
