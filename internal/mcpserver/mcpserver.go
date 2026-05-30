@@ -86,6 +86,19 @@ func inspectHandler(_ context.Context, request mcp.CallToolRequest) (*mcp.CallTo
 		return mcp.NewToolResultError(err.Error()), nil
 	}
 
+	info, statErr := os.Stat(repoArg)
+	isLocal := statErr == nil && info.IsDir()
+
+	if isLocal {
+		if err := repo.ValidateLocalPath(repoArg, true); err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+	} else {
+		if err := repo.ValidateRemoteURL(repoArg); err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+	}
+
 	opts := internal.Options{
 		Format:    request.GetString("format", "json"),
 		MaxTokens: request.GetInt("max_tokens", 6000),
@@ -115,6 +128,19 @@ func listFilesHandler(_ context.Context, request mcp.CallToolRequest) (*mcp.Call
 		return mcp.NewToolResultError(err.Error()), nil
 	}
 
+	info, statErr := os.Stat(repoArg)
+	isLocal := statErr == nil && info.IsDir()
+
+	if isLocal {
+		if err := repo.ValidateLocalPath(repoArg, true); err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+	} else {
+		if err := repo.ValidateRemoteURL(repoArg); err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+	}
+
 	var includes, excludes []string
 	if include := request.GetString("include", ""); include != "" {
 		includes = splitPatterns(include)
@@ -123,21 +149,12 @@ func listFilesHandler(_ context.Context, request mcp.CallToolRequest) (*mcp.Call
 		excludes = splitPatterns(exclude)
 	}
 
-	var localPath string
-	var tmpDir string
-
-	info, statErr := os.Stat(repoArg)
-	if statErr == nil && info.IsDir() {
-		localPath = repoArg
-	} else if os.IsNotExist(statErr) {
-		tmpDir, err = repo.FetchRemote(repoArg)
-		if err != nil {
-			return mcp.NewToolResultError(fmt.Sprintf("fetch remote: %v", err)), nil
-		}
+	localPath, tmpDir, _, _, err := repo.ResolveRepo(repoArg)
+	if err != nil {
+		return mcp.NewToolResultError(err.Error()), nil
+	}
+	if tmpDir != "" {
 		defer repo.Cleanup(tmpDir)
-		localPath = tmpDir
-	} else {
-		return mcp.NewToolResultError(fmt.Sprintf("cannot access %q: %v", repoArg, statErr)), nil
 	}
 
 	entries, err := repo.ReadLocalRepo(localPath)
@@ -153,7 +170,11 @@ func listFilesHandler(_ context.Context, request mcp.CallToolRequest) (*mcp.Call
 
 	var files []fileInfo
 	for _, e := range entries {
-		if !filter.MatchAny(e.Path, includes, excludes) {
+		matched, err := filter.MatchAny(e.Path, includes, excludes)
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("filter: %v", err)), nil
+		}
+		if !matched {
 			continue
 		}
 		files = append(files, fileInfo{
@@ -182,26 +203,11 @@ func listFilesHandler(_ context.Context, request mcp.CallToolRequest) (*mcp.Call
 
 func splitPatterns(s string) []string {
 	var result []string
-	start := 0
-	for i := 0; i <= len(s); i++ {
-		if i == len(s) || s[i] == ',' {
-			part := trimSpaces(s[start:i])
-			if part != "" {
-				result = append(result, part)
-			}
-			start = i + 1
+	for _, p := range strings.Split(s, ",") {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			result = append(result, p)
 		}
 	}
 	return result
-}
-
-func trimSpaces(s string) string {
-	start, end := 0, len(s)
-	for start < end && (s[start] == ' ' || s[start] == '\t') {
-		start++
-	}
-	for end > start && (s[end-1] == ' ' || s[end-1] == '\t') {
-		end--
-	}
-	return s[start:end]
 }

@@ -1,4 +1,4 @@
-.PHONY: all build test clean run dev lint install uninstall
+.PHONY: all build test clean run dev lint install uninstall ci
 
 BINARY_NAME=gitinspect
 GO=go
@@ -23,7 +23,16 @@ dev: build
 	./$(BINARY_NAME) inspect --format text --strip .
 
 lint:
-	golangci-lint run
+	golangci-lint run ./...
+
+ci:
+	@echo "==> Building all packages..."
+	go build -v ./...
+	@echo "==> Testing all packages..."
+	go test -v -count=1 ./...
+	@echo "==> Linting all packages..."
+	golangci-lint run ./...
+	@echo "==> CI pipeline passed!"
 
 install: build
 	install -d $(DESTDIR)$(INSTALL_DIR)

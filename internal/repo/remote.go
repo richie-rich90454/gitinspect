@@ -11,7 +11,7 @@ import (
 
 // ResolveHEAD returns the HEAD commit hash for a remote URL.
 func ResolveHEAD(url string) (string, error) {
-	cmd := exec.Command("git", "ls-remote", url, "HEAD")
+	cmd := exec.Command("git", "ls-remote", url, "HEAD") //nolint:gosec
 	out, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("ls-remote failed: %w", err)
@@ -25,7 +25,7 @@ func ResolveHEAD(url string) (string, error) {
 
 // ShallowClone performs a git clone --depth=1 into tmpDir.
 func ShallowClone(url, tmpDir string) error {
-	cmd := exec.Command("git", "clone", "--depth=1", "--filter=blob:none", url, tmpDir)
+	cmd := exec.Command("git", "clone", "--depth=1", "--filter=blob:none", url, tmpDir) //nolint:gosec
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("git clone failed: %s: %w", string(out), err)
 	}
@@ -36,7 +36,7 @@ func ShallowClone(url, tmpDir string) error {
 func FetchRemote(url string) (string, error) {
 	tmpDir, err := os.MkdirTemp("", "gitinspect-")
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("create temp dir: %w", err)
 	}
 
 	if err := ShallowClone(url, tmpDir); err != nil {

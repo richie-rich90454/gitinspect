@@ -1,6 +1,6 @@
 # gitinspect
 
-A CLI tool (and optional HTTP/MCP server) that turns any Git repository — local path or remote URL — into a structured, token-efficient snapshot optimized for LLMs and AI agents. Works with any Git host without requiring a full clone.
+A CLI tool (and optional HTTP/MCP server) that turns any Git repository — local path or remote URL — into a structured, token-efficient snapshot optimized for LLMs and AI agents. Works with any Git host using shallow clones.
 
 ## Badges
 
@@ -127,16 +127,19 @@ gitinspect inspect --include "**/*.go" --exclude "**/vendor/*" .
 ### HTTP Server Mode
 
 ```bash
-gitinspect serve --port 8080
+gitinspect serve --port 8080 --api-key my-secret-key --max-concurrent 8
 ```
 
 Then send a POST request:
 
 ```bash
 curl -X POST -H "Content-Type: application/json" \
+  -H "Authorization: Bearer my-secret-key" \
   -d '{"repo": "https://github.com/user/repo.git", "format": "json"}' \
   http://localhost:8080/inspect
 ```
+
+Use `--api-key` to require authentication on all requests. Use `--max-concurrent` to control how many remote fetches run in parallel (default: 4).
 
 ## AI Agent Integration (MCP)
 
@@ -186,6 +189,8 @@ Works with Claude Desktop, Cursor, Windsurf, VS Code Copilot, and any MCP-compat
 | `--no-cache` | `false` | Disable cache |
 | `--quiet` | `false` | Suppress progress output (for scripting) |
 | `--port` | `8080` | HTTP server port (serve command) |
+| `--api-key` | (none) | API key for HTTP server authentication |
+| `--max-concurrent` | `4` | Maximum concurrent remote fetches |
 
 ## Output Examples
 
@@ -286,6 +291,8 @@ Tokens are estimated as `ceil(len(content) / 4)`. When the budget is exceeded:
 2. If a file would exceed the remaining budget, it is truncated (first 1000 + last 500 chars with a truncation marker)
 3. If a single file alone exceeds the entire budget, it is included but truncated
 4. `stats.truncated` is set to `true` in the output
+
+> **Note:** If `--max-tokens` is 0 or negative, it defaults to 6000.
 
 ## Dependency Extraction
 

@@ -51,41 +51,28 @@ func runInspectCore(repoArg string, opts Options) (*inspectResult, error) {
 		maxTokens = defaultMaxTokens
 	}
 
-	var localPath string
-	var tmpDir string
-	var isRemote bool
-	var commitHash string
-
-	info, statErr := os.Stat(repoArg)
-	if statErr == nil && info.IsDir() {
-		localPath = repoArg
-	} else if os.IsNotExist(statErr) {
-		isRemote = true
-		head, err := repo.ResolveHEAD(repoArg)
-		if err == nil {
-			commitHash = head
-		}
-
-		cache := repo.NewCache()
-		if !opts.NoCache && commitHash != "" {
-			key := repo.GenerateKey(repoArg, commitHash)
-			if data, ok := cache.Get(key); ok {
-				var cached inspectResult
-				if unmarshalCache(data, &cached) == nil {
-					return &cached, nil
+	if _, statErr := os.Stat(repoArg); os.IsNotExist(statErr) {
+		head, headErr := repo.ResolveHEAD(repoArg)
+		if headErr == nil && head != "" {
+			cache := repo.NewCache()
+			if !opts.NoCache {
+				key := repo.GenerateKey(repoArg, head)
+				if data, ok := cache.Get(key); ok {
+					var cached inspectResult
+					if unmarshalCache(data, &cached) == nil {
+						return &cached, nil
+					}
 				}
 			}
 		}
+	}
 
-		tmp, err := repo.FetchRemote(repoArg)
-		if err != nil {
-			return nil, fmt.Errorf("fetch remote: %w", err)
-		}
-		tmpDir = tmp
+	localPath, tmpDir, isRemote, commitHash, err := repo.ResolveRepo(repoArg)
+	if err != nil {
+		return nil, err
+	}
+	if tmpDir != "" {
 		defer repo.Cleanup(tmpDir)
-		localPath = tmpDir
-	} else {
-		return nil, fmt.Errorf("cannot access %q: %w", repoArg, statErr)
 	}
 
 	entries, err := repo.ReadLocalRepo(localPath)
@@ -100,7 +87,11 @@ func runInspectCore(repoArg string, opts Options) (*inspectResult, error) {
 
 	var paths []string
 	for _, e := range entries {
-		if filter.MatchAny(e.Path, opts.Include, opts.Exclude) {
+		matched, err := filter.MatchAny(e.Path, opts.Include, opts.Exclude)
+		if err != nil {
+			return nil, fmt.Errorf("filter: %w", err)
+		}
+		if matched {
 			paths = append(paths, e.Path)
 		}
 	}

@@ -24,6 +24,7 @@ Inspect a Git repository and output a structured snapshot.
 | `--strip` | `false` | Strip comments and blank lines |
 | `--no-cache` | `false` | Disable cache |
 | `--quiet` | `false` | Suppress progress output to stderr |
+| `--max-concurrent` | `4` | Maximum concurrent remote fetches |
 
 ### Exit Codes
 
@@ -64,6 +65,8 @@ Start an HTTP server with a `POST /inspect` endpoint.
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--port` | `8080` | HTTP server port |
+| `--api-key` | (none) | API key for HTTP server authentication |
+| `--max-concurrent` | `4` | Maximum concurrent remote fetches |
 
 ### Request Body
 
@@ -86,8 +89,15 @@ Start an HTTP server with a `POST /inspect` endpoint.
 # Start server
 gitinspect serve --port 8080
 
-# Call the endpoint
+# Start server with API key authentication
+gitinspect serve --port 8080 --api-key my-secret-key
+
+# Start server with increased concurrency
+gitinspect serve --port 8080 --max-concurrent 8
+
+# Call the endpoint (with auth)
 curl -X POST -H "Content-Type: application/json" \
+  -H "Authorization: Bearer my-secret-key" \
   -d '{"repo": "https://github.com/user/repo.git"}' \
   http://localhost:8080/inspect
 ```

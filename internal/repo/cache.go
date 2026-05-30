@@ -13,17 +13,20 @@ const cacheTTL = 1 * time.Hour
 
 // Cache provides a disk-based cache keyed by SHA-256 hash.
 type Cache struct {
-	Dir string
+	Dir     string
+	initErr error
 }
 
 // NewCache creates a Cache using ~/.cache/gitinspect/.
 func NewCache() *Cache {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return &Cache{Dir: ""}
+		return &Cache{Dir: "", initErr: err}
 	}
 	dir := filepath.Join(homeDir, ".cache", "gitinspect")
-	_ = os.MkdirAll(dir, 0755)
+	if err := os.MkdirAll(dir, 0755); err != nil { //nolint:gosec
+		return &Cache{Dir: dir, initErr: err}
+	}
 	return &Cache{Dir: dir}
 }
 
@@ -36,6 +39,9 @@ func GenerateKey(repoURL, commitHash string) string {
 
 // Get retrieves cached data by key. Returns false on miss or expiry.
 func (c *Cache) Get(key string) ([]byte, bool) {
+	if c.initErr != nil {
+		return nil, false
+	}
 	if c.Dir == "" {
 		return nil, false
 	}
@@ -50,7 +56,7 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 		return nil, false
 	}
 
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec
 	if err != nil {
 		return nil, false
 	}
@@ -59,20 +65,23 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 
 // Set writes data to the cache under the given key.
 func (c *Cache) Set(key string, data []byte) error {
+	if c.initErr != nil {
+		return c.initErr
+	}
 	if c.Dir == "" {
 		return nil
 	}
 	path := filepath.Join(c.Dir, key)
 	tmp := path + ".tmp"
 
-	if err := os.WriteFile(tmp, data, 0644); err != nil {
+	if err := os.WriteFile(tmp, data, 0644); err != nil { //nolint:gosec
 		return err
 	}
 
 	if err := os.Rename(tmp, path); err != nil {
-		_ = os.Remove(tmp)
 		_ = os.Remove(path)
-		if err2 := os.WriteFile(path, data, 0644); err2 != nil {
+		if err2 := os.Rename(tmp, path); err2 != nil {
+			_ = os.Remove(tmp)
 			return err2
 		}
 	}

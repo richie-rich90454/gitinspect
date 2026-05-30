@@ -19,7 +19,11 @@ func TestMatchAny(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got := MatchAny(tt.path, tt.includes, tt.excludes)
+		got, err := MatchAny(tt.path, tt.includes, tt.excludes)
+		if err != nil {
+			t.Errorf("MatchAny(%q, %v, %v) returned unexpected error: %v", tt.path, tt.includes, tt.excludes, err)
+			continue
+		}
 		if got != tt.expected {
 			t.Errorf("MatchAny(%q, %v, %v) = %v, want %v", tt.path, tt.includes, tt.excludes, got, tt.expected)
 		}

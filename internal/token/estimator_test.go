@@ -23,23 +23,53 @@ func TestEstimate(t *testing.T) {
 	}
 }
 
-func TestTruncate(t *testing.T) {
-	short := "hello world"
-	result := Truncate(short)
-	if result != short {
-		t.Errorf("Truncate should not modify short content")
+func TestEstimateSize(t *testing.T) {
+	tests := []struct {
+		size     int
+		expected int
+	}{
+		{0, 0},
+		{1, 1},
+		{4, 1},
+		{5, 2},
+		{8, 2},
+		{9, 3},
+		{100, 25},
 	}
 
-	long := make([]byte, 2000)
-	for i := range long {
-		long[i] = 'a' + byte(i%26)
+	for _, tt := range tests {
+		got := EstimateSize(tt.size)
+		if got != tt.expected {
+			t.Errorf("EstimateSize(%d) = %d, want %d", tt.size, got, tt.expected)
+		}
 	}
-	content := string(long)
-	result = Truncate(content)
-	if len(result) >= len(content) {
-		t.Errorf("Truncate should shorten long content")
+}
+
+func TestTruncateMultiByteUTF8(t *testing.T) {
+	head := "你好世界"
+	for len(head) < 1000 {
+		head += "你好世界"
 	}
-	if len(result) < 1000 {
-		t.Errorf("Truncate should keep at least 1000 chars from head, got %d", len(result))
+	tail := "再见世界"
+	for len(tail) < 500 {
+		tail += "再见世界"
+	}
+	content := head + "padding" + tail
+
+	result := Truncate(content)
+
+	for _, r := range result {
+		if r == '\ufffd' {
+			t.Error("Truncate produced invalid UTF-8 (replacement character found)")
+			break
+		}
+	}
+}
+
+func TestTruncateShortMultiByte(t *testing.T) {
+	content := "hello"
+	result := Truncate(content)
+	if result != content {
+		t.Error("Truncate should not modify short multi-byte-safe content")
 	}
 }

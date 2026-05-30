@@ -21,6 +21,8 @@ When a file's content exceeds the remaining token budget, gitinspect truncates i
 
 ## Configuring the Budget
 
+> **Note:** If `--max-tokens` is 0 or negative, it defaults to 6000.
+
 ```bash
 # Default: 6000 tokens
 gitinspect inspect .

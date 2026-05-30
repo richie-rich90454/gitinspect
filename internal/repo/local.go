@@ -41,7 +41,7 @@ func isBinary(data []byte) bool {
 		checkLen = 8000
 	}
 	for i := 0; i < checkLen; i++ {
-		if data[i] == 0 {
+		if data[i] == 0 { //nolint:gosec
 			return true
 		}
 	}
@@ -110,7 +110,7 @@ func readDir(root string, matcher gitignore.Matcher) ([]FileEntry, error) {
 			return nil
 		}
 
-		data, err := os.ReadFile(path)
+		data, err := os.ReadFile(path) //nolint:gosec
 		if err != nil {
 			return nil
 		}

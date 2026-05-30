@@ -53,6 +53,34 @@ if ! curl -sfL "$URL" -o "${TMPDIR}/gitinspect.${EXT}"; then
     exit 1
 fi
 
+CHECKSUMS_URL="https://github.com/${REPO}/releases/download/${TAG}/checksums.txt"
+ARCHIVE_NAME="gitinspect_${TAG#v}_${SUFFIX}.${EXT}"
+
+printf 'Downloading checksums\n'
+if ! curl -sfL "$CHECKSUMS_URL" -o "${TMPDIR}/checksums.txt"; then
+    printf 'Checksums download failed\n' >&2
+    exit 1
+fi
+
+EXPECTED=$(grep "  ${ARCHIVE_NAME}$" "${TMPDIR}/checksums.txt" | awk '{print $1}')
+if [ -z "$EXPECTED" ]; then
+    printf 'Archive not found in checksums file\n' >&2
+    exit 1
+fi
+
+if [ "$OS" = "windows" ]; then
+    ACTUAL=$(certutil -hashfile "${TMPDIR}/gitinspect.${EXT}" SHA256 | grep -v ":" | tr -d ' \r\n' | tr '[:upper:]' '[:lower:]')
+else
+    ACTUAL=$(sha256sum "${TMPDIR}/gitinspect.${EXT}" | awk '{print $1}')
+fi
+
+if [ "$ACTUAL" != "$EXPECTED" ]; then
+    printf 'Checksum verification failed!\nExpected: %s\nActual:   %s\n' "$EXPECTED" "$ACTUAL" >&2
+    exit 1
+fi
+
+printf 'Checksum verified\n'
+
 if [ "$EXT" = "tar.gz" ]; then
     tar xzf "${TMPDIR}/gitinspect.${EXT}" -C "$TMPDIR"
 else

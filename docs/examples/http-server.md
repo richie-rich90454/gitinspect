@@ -8,6 +8,35 @@ Run gitinspect as an HTTP server for programmatic access.
 gitinspect serve --port 8080
 ```
 
+### Authentication
+
+Use `--api-key` to require authentication on all requests:
+
+```bash
+gitinspect serve --port 8080 --api-key my-secret-key
+```
+
+When an API key is set, all requests must include an `Authorization: Bearer <key>` header:
+
+```bash
+curl -X POST http://localhost:8080/inspect \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer my-secret-key" \
+  -d '{"repo": "https://github.com/user/repo.git"}'
+```
+
+Requests without a valid key receive a `401 Unauthorized` response.
+
+### Concurrency
+
+Use `--max-concurrent` to control how many remote fetches run in parallel (default: 4):
+
+```bash
+gitinspect serve --port 8080 --max-concurrent 8
+```
+
+Increase this value for high-throughput scenarios with many remote repositories.
+
 ## API Endpoint
 
 ### `POST /inspect`
