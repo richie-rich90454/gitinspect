@@ -2,7 +2,6 @@ package internal
 
 import (
 	"encoding/json"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -189,8 +188,4 @@ func TestRunInspectWithInclude(t *testing.T) {
 			t.Errorf("expected only .go files, got %s", path)
 		}
 	}
-}
-
-func init() {
-	_, _ = os.ReadFile("dummy")
 }

@@ -1,3 +1,4 @@
+// Package mcpserver provides an MCP server for AI agent integration.
 package mcpserver
 
 import (
@@ -10,16 +11,18 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 
-	"github.com/richie-rich90454/gitinspect/internal/filter"
 	internal "github.com/richie-rich90454/gitinspect/internal"
+	"github.com/richie-rich90454/gitinspect/internal/filter"
 	"github.com/richie-rich90454/gitinspect/internal/repo"
 	"github.com/richie-rich90454/gitinspect/internal/token"
 )
 
+// ServeStdio starts the MCP server using stdio transport.
 func ServeStdio(s *server.MCPServer) error {
 	return server.ServeStdio(s)
 }
 
+// NewServer creates an MCP server with gitinspect tools registered.
 func NewServer() *server.MCPServer {
 	s := server.NewMCPServer(
 		"gitinspect",
@@ -77,7 +80,7 @@ func NewServer() *server.MCPServer {
 	return s
 }
 
-func inspectHandler(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func inspectHandler(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	repoArg, err := request.RequireString("repo")
 	if err != nil {
 		return mcp.NewToolResultError(err.Error()), nil
@@ -106,7 +109,7 @@ func inspectHandler(ctx context.Context, request mcp.CallToolRequest) (*mcp.Call
 	return mcp.NewToolResultText(string(out)), nil
 }
 
-func listFilesHandler(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+func listFilesHandler(_ context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	repoArg, err := request.RequireString("repo")
 	if err != nil {
 		return mcp.NewToolResultError(err.Error()), nil
@@ -123,15 +126,18 @@ func listFilesHandler(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	var localPath string
 	var tmpDir string
 
-	if _, statErr := os.Stat(repoArg); statErr == nil {
+	info, statErr := os.Stat(repoArg)
+	if statErr == nil && info.IsDir() {
 		localPath = repoArg
-	} else {
+	} else if os.IsNotExist(statErr) {
 		tmpDir, err = repo.FetchRemote(repoArg)
 		if err != nil {
 			return mcp.NewToolResultError(fmt.Sprintf("fetch remote: %v", err)), nil
 		}
 		defer repo.Cleanup(tmpDir)
 		localPath = tmpDir
+	} else {
+		return mcp.NewToolResultError(fmt.Sprintf("cannot access %q: %v", repoArg, statErr)), nil
 	}
 
 	entries, err := repo.ReadLocalRepo(localPath)
@@ -165,10 +171,10 @@ func listFilesHandler(ctx context.Context, request mcp.CallToolRequest) (*mcp.Ca
 	})
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("Repository: %s\nFiles: %d\n\n", repoArg, len(files)))
+	fmt.Fprintf(&sb, "Repository: %s\nFiles: %d\n\n", repoArg, len(files))
 	for _, f := range files {
 		estTokens := (f.size + 3) / 4
-		sb.WriteString(fmt.Sprintf("  [priority=%d, ~%d tokens, %d bytes] %s\n", f.priority, estTokens, f.size, f.path))
+		fmt.Fprintf(&sb, "  [priority=%d, ~%d tokens, %d bytes] %s\n", f.priority, estTokens, f.size, f.path)
 	}
 
 	return mcp.NewToolResultText(sb.String()), nil

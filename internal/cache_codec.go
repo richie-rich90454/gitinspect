@@ -1,3 +1,4 @@
+// Package internal provides the core inspection pipeline.
 package internal
 
 import (

@@ -1,14 +1,17 @@
+// Package server provides an HTTP endpoint for repository inspection.
 package server
 
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 
 	internal "github.com/richie-rich90454/gitinspect/internal"
 )
 
+// InspectRequest is the JSON body for POST /inspect.
 type InspectRequest struct {
 	Repo      string   `json:"repo"`
 	Format    string   `json:"format,omitempty"`
@@ -20,6 +23,7 @@ type InspectRequest struct {
 	NoCache   bool     `json:"no_cache,omitempty"`
 }
 
+// Serve starts the HTTP server on the given port.
 func Serve(port int) error {
 	http.HandleFunc("/inspect", inspectHandler)
 	addr := fmt.Sprintf(":%d", port)
@@ -33,8 +37,11 @@ func inspectHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	const maxBodySize = 10 << 20
+	r.Body = http.MaxBytesReader(w, r.Body, maxBodySize)
+
 	var req InspectRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := json.NewDecoder(io.LimitReader(r.Body, maxBodySize)).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -63,7 +70,7 @@ func inspectHandler(w http.ResponseWriter, r *http.Request) {
 
 	result, err := internal.RunInspect(req.Repo, opts)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "inspection failed", http.StatusInternalServerError)
 		return
 	}
 
@@ -72,7 +79,7 @@ func inspectHandler(w http.ResponseWriter, r *http.Request) {
 	case "text":
 		contentType = "text/plain"
 	case "yaml":
-		contentType = "text/yaml"
+		contentType = "application/yaml"
 	}
 
 	w.Header().Set("Content-Type", contentType)

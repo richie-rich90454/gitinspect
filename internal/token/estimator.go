@@ -1,11 +1,14 @@
+// Package token provides token estimation and file prioritization.
 package token
 
 import "unicode/utf8"
 
+// Estimate returns an approximate token count for the given content.
 func Estimate(content string) int {
 	return (len(content) + 3) / 4
 }
 
+// Truncate shortens content by keeping the head and tail with a truncation marker.
 func Truncate(content string) string {
 	const headSize = 1000
 	const tailSize = 500

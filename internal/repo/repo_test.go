@@ -11,7 +11,7 @@ func TestCacheSetGet(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	c := &Cache{Dir: tmpDir}
 	key := "testkey123"
@@ -35,7 +35,7 @@ func TestCacheMiss(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	c := &Cache{Dir: tmpDir}
 	_, ok := c.Get("nonexistent")

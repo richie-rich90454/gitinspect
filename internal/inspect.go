@@ -14,12 +14,15 @@ import (
 	"github.com/richie-rich90454/gitinspect/internal/token"
 )
 
+// Version is the current release version.
 const Version = "0.1.0"
 
+// PriorityScore returns the priority score for a file path.
 func PriorityScore(path string) int {
 	return token.PriorityScore(path)
 }
 
+// Options configures an inspection run.
 type Options struct {
 	Format    string
 	MaxTokens int
@@ -45,9 +48,10 @@ func runInspectCore(repoArg string, opts Options) (*inspectResult, error) {
 	var isRemote bool
 	var commitHash string
 
-	if _, err := os.Stat(repoArg); err == nil {
+	info, statErr := os.Stat(repoArg)
+	if statErr == nil && info.IsDir() {
 		localPath = repoArg
-	} else {
+	} else if os.IsNotExist(statErr) {
 		isRemote = true
 		head, err := repo.ResolveHEAD(repoArg)
 		if err == nil {
@@ -65,12 +69,15 @@ func runInspectCore(repoArg string, opts Options) (*inspectResult, error) {
 			}
 		}
 
-		tmpDir, err = repo.FetchRemote(repoArg)
+		tmp, err := repo.FetchRemote(repoArg)
 		if err != nil {
 			return nil, fmt.Errorf("fetch remote: %w", err)
 		}
+		tmpDir = tmp
 		defer repo.Cleanup(tmpDir)
 		localPath = tmpDir
+	} else {
+		return nil, fmt.Errorf("cannot access %q: %w", repoArg, statErr)
 	}
 
 	entries, err := repo.ReadLocalRepo(localPath)
@@ -119,20 +126,18 @@ func runInspectCore(repoArg string, opts Options) (*inspectResult, error) {
 			if truncatedContent != content {
 				content = truncatedContent
 				truncated = true
-			} else {
-				if totalTokens > 0 {
-					truncated = true
-					break
-				}
+			} else if totalTokens > 0 {
+				truncated = true
+				break
 			}
 		}
-
-		fileDeps := deps.Extract(p, content)
-		allDeps = append(allDeps, fileDeps...)
 
 		tree[p] = content
 		totalBytes += len(content)
 		totalTokens += token.Estimate(content)
+
+		fileDeps := deps.Extract(p, entryMap[p])
+		allDeps = append(allDeps, fileDeps...)
 
 		if totalTokens >= opts.MaxTokens {
 			truncated = true
@@ -162,6 +167,7 @@ func runInspectCore(repoArg string, opts Options) (*inspectResult, error) {
 	return result, nil
 }
 
+// RunInspect inspects a repository and returns formatted output.
 func RunInspect(repoArg string, opts Options) ([]byte, error) {
 	res, err := runInspectCore(repoArg, opts)
 	if err != nil {
@@ -190,6 +196,7 @@ func RunInspect(repoArg string, opts Options) ([]byte, error) {
 	}
 }
 
+// RunInspectRaw inspects a repository and returns the structured result.
 func RunInspectRaw(repoArg string, opts Options) (*output.Result, error) {
 	res, err := runInspectCore(repoArg, opts)
 	if err != nil {

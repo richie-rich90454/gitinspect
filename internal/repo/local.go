@@ -11,6 +11,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
 )
 
+// FileEntry holds a file's relative path, content, and size.
 type FileEntry struct {
 	Path    string
 	Content []byte
@@ -28,7 +29,7 @@ var binaryExts = map[string]bool{
 	".woff2": true, ".eot": true, ".ttf": true, ".otf": true, ".mp3": true,
 	".mp4": true, ".avi": true, ".mov": true, ".wmv": true, ".flac": true,
 	".pdf": true, ".doc": true, ".docx": true, ".xls": true, ".xlsx": true,
-	".ppt": true, ".pptx": true, ".sqlite": true, ".db": true, ".lock": true,
+	".ppt": true, ".pptx": true, ".sqlite": true, ".db": true,
 }
 
 func isBinary(data []byte) bool {
@@ -47,6 +48,7 @@ func isBinary(data []byte) bool {
 	return false
 }
 
+// ReadLocalRepo reads all text files from a local Git repository or directory.
 func ReadLocalRepo(repoPath string) ([]FileEntry, error) {
 	r, err := git.PlainOpen(repoPath)
 	if err != nil {
@@ -60,9 +62,9 @@ func ReadLocalRepo(repoPath string) ([]FileEntry, error) {
 
 	var patterns []gitignore.Pattern
 	if f, err := w.Filesystem.Open(".gitignore"); err == nil {
-		defer f.Close()
-		data, err := io.ReadAll(f)
-		if err == nil {
+		data, readErr := io.ReadAll(f)
+		closeErr := f.Close()
+		if readErr == nil && closeErr == nil {
 			for _, line := range strings.Split(string(data), "\n") {
 				line = strings.TrimSpace(line)
 				if line != "" && !strings.HasPrefix(line, "#") {
@@ -132,6 +134,7 @@ func readDir(root string, matcher gitignore.Matcher) ([]FileEntry, error) {
 	return entries, err
 }
 
+// StripComments removes single-line comments and blank lines based on file extension.
 func StripComments(content string, ext string) string {
 	var prefix string
 	switch ext {

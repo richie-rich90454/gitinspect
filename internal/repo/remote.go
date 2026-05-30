@@ -9,6 +9,7 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
+// ResolveHEAD returns the HEAD commit hash for a remote URL.
 func ResolveHEAD(url string) (string, error) {
 	cmd := exec.Command("git", "ls-remote", url, "HEAD")
 	out, err := cmd.Output()
@@ -22,6 +23,7 @@ func ResolveHEAD(url string) (string, error) {
 	return fields[0], nil
 }
 
+// ShallowClone performs a git clone --depth=1 into tmpDir.
 func ShallowClone(url, tmpDir string) error {
 	cmd := exec.Command("git", "clone", "--depth=1", "--filter=blob:none", url, tmpDir)
 	if out, err := cmd.CombinedOutput(); err != nil {
@@ -30,6 +32,7 @@ func ShallowClone(url, tmpDir string) error {
 	return nil
 }
 
+// FetchRemote clones a remote repo into a temp directory and returns its path.
 func FetchRemote(url string) (string, error) {
 	tmpDir, err := os.MkdirTemp("", "gitinspect-")
 	if err != nil {
@@ -54,6 +57,7 @@ func FetchRemote(url string) (string, error) {
 	return tmpDir, nil
 }
 
+// Cleanup removes a temporary directory.
 func Cleanup(dir string) {
 	_ = os.RemoveAll(dir)
 }

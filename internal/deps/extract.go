@@ -1,3 +1,4 @@
+// Package deps extracts dependency lists from common manifest files.
 package deps
 
 import (
@@ -9,6 +10,7 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+// Extract parses dependencies from a manifest file based on its name.
 func Extract(filePath, content string) []string {
 	base := filepath.Base(filePath)
 
@@ -114,11 +116,7 @@ func extractRequirementsTxt(content string) []string {
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
-		if idx := strings.IndexAny(line, "=~<>!"); idx != -1 {
-			deps = append(deps, line)
-		} else {
-			deps = append(deps, line)
-		}
+		deps = append(deps, line)
 	}
 	return deps
 }
@@ -133,10 +131,16 @@ func extractGemfile(content string) []string {
 		}
 		if strings.HasPrefix(line, "gem ") {
 			rest := strings.TrimSpace(line[4:])
-			rest = strings.Trim(rest, "'\"")
-			parts := strings.Fields(rest)
-			if len(parts) > 0 {
-				deps = append(deps, parts[0])
+			if len(rest) >= 2 && (rest[0] == '\'' || rest[0] == '"') {
+				end := strings.IndexByte(rest[1:], rest[0])
+				if end != -1 {
+					deps = append(deps, rest[1:end+1])
+				}
+			} else {
+				parts := strings.Fields(rest)
+				if len(parts) > 0 {
+					deps = append(deps, parts[0])
+				}
 			}
 		}
 	}

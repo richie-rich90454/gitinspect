@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// PriorityScore returns a priority score (0-4) for a file based on its path.
 func PriorityScore(path string) int {
 	base := filepath.Base(path)
 
@@ -41,6 +42,7 @@ type scoredFile struct {
 	score int
 }
 
+// SortByPriority sorts files by descending priority score.
 func SortByPriority(files []string) {
 	scored := make([]scoredFile, len(files))
 	for i, f := range files {
