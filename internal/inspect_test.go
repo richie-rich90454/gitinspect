@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/your-username/gitinspect/internal/output"
+	"github.com/richie-rich90454/gitinspect/internal/output"
 )
 
 func TestRunInspectLocal(t *testing.T) {

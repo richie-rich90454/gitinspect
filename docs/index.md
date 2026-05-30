@@ -14,7 +14,7 @@ hero:
       link: /guide/mcp
     - theme: alt
       text: GitHub
-      link: https://github.com/your-username/gitinspect
+      link: https://github.com/richie-rich90454/gitinspect
 
 features:
   - title: Token Budget Management
@@ -24,7 +24,7 @@ features:
     details: Built-in MCP server over stdio. Works with Claude, Cursor, Windsurf, VS Code Copilot, and any MCP-compatible agent.
     icon: 🤖
   - title: Any Git Host
-    details: GitHub, GitLab, Bitbucket, self-hosted — works with any Git repository without requiring a full clone.
+    details: GitHub, GitLab, Bitbucket, self-hosted �?works with any Git repository without requiring a full clone.
     icon: 🌐
   - title: Smart File Priority
     details: README first, then main files, then manifests, then build files. The most important code is always in context.

@@ -1,14 +1,14 @@
 # CODEOWNERS
 
 # Default owners for everything
-*       @your-username
+*       @richie-rich90454
 
 # Go source code
-/cmd/   @your-username
-/internal/ @your-username
+/cmd/   @richie-rich90454
+/internal/ @richie-rich90454
 
 # Documentation
-/docs/  @your-username
+/docs/  @richie-rich90454
 
 # CI and GitHub
-/.github/ @your-username
+/.github/ @richie-rich90454

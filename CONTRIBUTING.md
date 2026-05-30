@@ -25,7 +25,7 @@ uphold this code. Please report unacceptable behavior.
 
 ### Report Bugs
 
-Check the [issue tracker](https://github.com/your-username/gitinspect/issues) to
+Check the [issue tracker](https://github.com/richie-rich90454/gitinspect/issues) to
 see if the bug has already been reported. If not, open a new issue using the
 **Bug Report** template.
 
@@ -55,7 +55,7 @@ See [Development Setup](#development-setup) below.
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/gitinspect.git
+git clone https://github.com/richie-rich90454/gitinspect.git
 cd gitinspect
 
 # Build
@@ -116,7 +116,7 @@ npm run docs:build  # Build for production
 - Include tests for any new functionality
 - Update documentation if needed
 - Ensure CI passes (test + lint)
-- Keep PRs focused â€” one feature or fix per PR
+- Keep PRs focused â€?one feature or fix per PR
 
 ## Reporting Bugs
 
@@ -133,10 +133,10 @@ When filing a bug report, please include:
 
 When suggesting a feature, please include:
 
-- **Use case** â€” what problem does this solve?
-- **Proposed solution** â€” how should it work?
-- **Alternatives considered** â€” what other approaches did you consider?
-- **Additional context** â€” screenshots, examples, etc.
+- **Use case** â€?what problem does this solve?
+- **Proposed solution** â€?how should it work?
+- **Alternatives considered** â€?what other approaches did you consider?
+- **Additional context** â€?screenshots, examples, etc.
 
 ---
 

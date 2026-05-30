@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	internal "github.com/your-username/gitinspect/internal"
+	internal "github.com/richie-rich90454/gitinspect/internal"
 )
 
 type InspectRequest struct {

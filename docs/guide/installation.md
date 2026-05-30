@@ -2,10 +2,10 @@
 
 ## Quick Install (macOS / Linux)
 
-The fastest way to get started â€” one command:
+The fastest way to get started â€?one command:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/your-username/gitinspect/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/richie-rich90454/gitinspect/main/install.sh | bash
 ```
 
 Set `INSTALL_DIR` to change the install location (default: `/usr/local/bin`):
@@ -17,14 +17,14 @@ curl -fsSL ... | INSTALL_DIR=~/.local/bin bash
 ## Homebrew
 
 ```bash
-brew tap your-username/tap
+brew tap richie-rich90454/tap
 brew install gitinspect
 ```
 
 ## Scoop (Windows)
 
 ```powershell
-scoop bucket add gitinspect https://github.com/your-username/scoop-bucket
+scoop bucket add gitinspect https://github.com/richie-rich90454/scoop-bucket
 scoop install gitinspect
 ```
 
@@ -33,12 +33,12 @@ scoop install gitinspect
 Requires Go 1.22+:
 
 ```bash
-go install github.com/your-username/gitinspect/cmd/gitinspect@latest
+go install github.com/richie-rich90454/gitinspect/cmd/gitinspect@latest
 ```
 
 ## Binary Download
 
-Download the latest binary for your platform from the [Releases page](https://github.com/your-username/gitinspect/releases):
+Download the latest binary for your platform from the [Releases page](https://github.com/richie-rich90454/gitinspect/releases):
 
 | Platform | Architecture | File |
 |----------|-------------|------|

@@ -18,7 +18,7 @@ export default defineConfig({
         text: 'v0.1.0',
         items: [
           { text: 'Changelog', link: '/guide/changelog' },
-          { text: 'GitHub', link: 'https://github.com/your-username/gitinspect' },
+          { text: 'GitHub', link: 'https://github.com/richie-rich90454/gitinspect' },
         ],
       },
     ],
@@ -69,7 +69,7 @@ export default defineConfig({
       provider: 'local',
     },
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/your-username/gitinspect' },
+      { icon: 'github', link: 'https://github.com/richie-rich90454/gitinspect' },
     ],
     footer: {
       message: 'Released under the Apache-2.0 License.',

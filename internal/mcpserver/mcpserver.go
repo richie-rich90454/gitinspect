@@ -7,7 +7,7 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 
-	internal "github.com/your-username/gitinspect/internal"
+	internal "github.com/richie-rich90454/gitinspect/internal"
 )
 
 func ServeStdio(s *server.MCPServer) error {

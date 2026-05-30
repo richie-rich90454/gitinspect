@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/your-username/gitinspect/internal/deps"
-	"github.com/your-username/gitinspect/internal/filter"
-	"github.com/your-username/gitinspect/internal/output"
-	"github.com/your-username/gitinspect/internal/repo"
-	"github.com/your-username/gitinspect/internal/token"
+	"github.com/richie-rich90454/gitinspect/internal/deps"
+	"github.com/richie-rich90454/gitinspect/internal/filter"
+	"github.com/richie-rich90454/gitinspect/internal/output"
+	"github.com/richie-rich90454/gitinspect/internal/repo"
+	"github.com/richie-rich90454/gitinspect/internal/token"
 )
 
 const Version = "0.1.0"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="your-username/gitinspect"
+REPO="richie-rich90454/gitinspect"
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 
 printf 'gitinspect installer\n\n'

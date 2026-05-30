@@ -1,4 +1,4 @@
-module github.com/your-username/gitinspect
+module github.com/richie-rich90454/gitinspect
 
 go 1.25.5
 

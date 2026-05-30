@@ -56,11 +56,11 @@ changelog:
 brews:
   - name: gitinspect
     repository:
-      owner: your-username
+      owner: richie-rich90454
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     directory: Formula
-    homepage: "https://github.com/your-username/gitinspect"
+    homepage: "https://github.com/richie-rich90454/gitinspect"
     description: "Turn any Git repo into an AI-friendly, token-efficient snapshot"
     license: Apache-2.0
     install: |
@@ -71,17 +71,17 @@ brews:
 scoops:
   - name: gitinspect
     repository:
-      owner: your-username
+      owner: richie-rich90454
       name: scoop-bucket
       token: "{{ .Env.SCOOP_BUCKET_TOKEN }}"
-    homepage: "https://github.com/your-username/gitinspect"
+    homepage: "https://github.com/richie-rich90454/gitinspect"
     description: "Turn any Git repo into an AI-friendly, token-efficient snapshot"
     license: Apache-2.0
 
 nfpms:
   - id: default
     package_name: gitinspect
-    homepage: "https://github.com/your-username/gitinspect"
+    homepage: "https://github.com/richie-rich90454/gitinspect"
     description: "Turn any Git repo into an AI-friendly, token-efficient snapshot"
     license: Apache-2.0
     formats:
@@ -92,7 +92,7 @@ nfpms:
 
 release:
   github:
-    owner: your-username
+    owner: richie-rich90454
     name: gitinspect
   draft: false
   prerelease: auto
