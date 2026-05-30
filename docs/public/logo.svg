@@ -1,12 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
-  <rect width="128" height="128" rx="24" fill="#1a1a2e"/>
-  <path d="M32 28h64v8H40v24h48v8H40v32h-8V28z" fill="#e94560"/>
-  <circle cx="88" cy="36" r="6" fill="#0f3460"/>
-  <circle cx="88" cy="36" r="3" fill="#e94560"/>
-  <path d="M32 92h64v8H32z" fill="#0f3460"/>
-  <circle cx="40" cy="96" r="4" fill="#e94560"/>
-  <circle cx="56" cy="96" r="4" fill="#16213e"/>
-  <circle cx="72" cy="96" r="4" fill="#16213e"/>
-  <circle cx="88" cy="96" r="4" fill="#16213e"/>
-  <text x="64" y="78" text-anchor="middle" font-family="monospace" font-size="20" font-weight="bold" fill="#e94560">GI</text>
+  <rect width="128" height="128" rx="28" fill="#0D1117"/>
+  
+  <circle cx="64" cy="64" r="44" stroke="#30363D" stroke-width="2" stroke-dasharray="4 4" />
+
+  <path d="M44 36V92" stroke="#30363D" stroke-width="6" stroke-linecap="round"/>
+  
+  <path d="M44 64C44 64 56 64 68 64C76 64 84 64 84 64" stroke="#58A6FF" stroke-width="6" stroke-linecap="round"/>
+  
+  <circle cx="44" cy="36" r="5" fill="#30363D"/>
+  <circle cx="44" cy="92" r="5" fill="#30363D"/>
+  <circle cx="44" cy="64" r="5" fill="#58A6FF"/>
+
+  <circle cx="84" cy="64" r="14" fill="#58A6FF" fill-opacity="0.15"/>
+  <circle cx="84" cy="64" r="8" fill="#58A6FF"/>
+  <circle cx="84" cy="64" r="3" fill="#0D1117"/>
 </svg>
