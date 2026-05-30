@@ -6,9 +6,11 @@
   "scripts": {
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
-    "docs:preview": "vitepress preview"
+    "docs:preview": "vitepress preview",
+    "generate-favicons": "node scripts/generate-favicons.js"
   },
   "devDependencies": {
+    "sharp": "^0.34.5",
     "vitepress": "^1.6.4",
     "vue": "^3.5.35"
   }
